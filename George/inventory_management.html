@@ -1,0 +1,2842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sangkalan | Inventory Control</title>
+    <link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            // Initialize EmailJS with your Public Key
+            emailjs.init('hEygq8Cv0kKAd3sLt');
+        })();
+    </script>
+    <style>
+        :root {
+            --accent: #38bdf8;
+            --bg: #020617;
+            --glass: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --green: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            min-height: 100vh;
+            background-image: radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%);
+            padding: clamp(10px, 4vw, 30px);
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: white;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- HEADER --- */
+        .top-nav {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap; /* Para kusa mag-stack sa mobile */
+        }
+
+        @media (max-width: 600px) {
+            .top-nav { flex-direction: column; text-align: center; }
+            .btn-back { width: 100%; justify-content: center; }
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid var(--border);
+            color: #cbd5e1;
+            padding: 12px 26px;
+            border-radius: 100px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.2);
+        }
+
+        /* --- SEARCH BAR --- */
+        .search-container {
+            max-width: 1100px;
+            margin: 0 auto 20px;
+            width: 100%;
+        }
+        .search-input {
+            width: 100%;
+            background: var(--glass);
+            border: 1.5px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 15px;
+            color: white;
+            outline: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        .search-input:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        /* --- INDICATOR BAR (Summary Bar) --- */
+        .summary-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 900px) {
+            .summary-bar { grid-template-columns: repeat(2, 1fr); }
+            .summary-bar div:last-child { grid-column: span 2; }
+        }
+        @media (max-width: 500px) {
+            .summary-bar { grid-template-columns: 1fr; }
+            .summary-bar div:last-child { grid-column: span 1; }
+        }
+
+        .stat-pill {
+            background: var(--glass);
+            padding: 16px 18px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .stat-pill:hover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(56, 189, 248, 0.2);
+        }
+        .stat-pill:active {
+            transform: translateY(0);
+        }
+
+        /* --- DROPDOWN MENU --- */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            margin-top: 10px;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            animation: dropdownFade 0.2s ease-out;
+        }
+
+        @keyframes dropdownFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(56, 189, 248, 0.12);
+            color: white;
+        }
+
+        /* --- TABLE AREA --- */
+        .inventory-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            max-width: 1100px;
+            margin: 0 auto;
+            backdrop-filter: blur(20px);
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Eto yung sikreto para maging responsive ang table */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 700px; /* Force minimum width to prevent squishing */
+        }
+
+        tbody tr {
+            transition: 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        tbody tr:hover {
+            background: rgba(56, 189, 248, 0.08);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(0,0,0,0.15);
+        }
+
+        tbody tr:nth-child(even):hover {
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        th {
+            padding: 20px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            border-bottom: 2px solid var(--accent);
+            background: rgba(0,0,0,0.3);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .stock-input {
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid var(--border);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            width: 80px;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .stock-input:hover {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.1);
+        }
+        .stock-input:focus {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.15);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-adjust {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1.5px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-adjust:hover {
+            background: var(--accent);
+            color: #020617;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+        .btn-adjust:active {
+            transform: translateY(0);
+        }
+
+        /* --- ALARM LIGHTS --- */
+        .alarm-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .glow-red { background: var(--red); box-shadow: 0 0 18px var(--red), inset 0 0 4px rgba(255,255,255,0.3); animation: pulse 1.5s infinite; }
+        .glow-yellow { background: var(--yellow); box-shadow: 0 0 18px var(--yellow), inset 0 0 4px rgba(255,255,255,0.3); animation: pulse 2s infinite; }
+        .glow-green { background: var(--green); box-shadow: 0 0 16px var(--green), inset 0 0 4px rgba(255,255,255,0.3); }
+        .glow-off { background: #475569; box-shadow: inset 0 0 4px rgba(0,0,0,0.5); }
+
+        /* --- CSV BUTTONS --- */
+        .csv-button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px auto;
+            max-width: 1100px;
+        }
+
+        .csv-button {
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(56, 189, 248, 0.7) 100%);
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .csv-button:hover {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* --- MODAL STYLES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .date-input-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .date-input-group label {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        .date-input-group input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .date-input-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-button {
+            padding: 11px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-button-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            border: 1.5px solid var(--border);
+        }
+
+        .modal-button-cancel:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        .modal-button-confirm {
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(56, 189, 248, 0.8) 100%);
+            color: #020617;
+            border: none;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .modal-button-confirm:hover {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent) 100%);
+            box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            color: var(--green);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; }
+        }
+
+        .row-highlight { background: rgba(56, 189, 248, 0.05); }
+
+        /* --- LARGE MODAL STYLES --- */
+        .modal-content-large {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0;
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            gap: 20px;
+        }
+
+        .modal-content-large .modal-header {
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-content-large .modal-body {
+            padding: 20px 30px;
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-top-bar .modal-buttons {
+            padding: 0;
+            border: none;
+            flex-shrink: 0;
+            gap: 12px;
+        }
+
+        .category-section {
+            margin-bottom: 30px;
+            background: rgba(56, 189, 248, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .inventory-item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .inventory-item-column {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .inventory-item-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .inventory-item-row label {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            grid-column: span 1;
+        }
+
+        .inventory-item-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .inventory-item-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+        }
+
+        .inventory-item-display {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: #cbd5e1;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .inventory-column-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .inventory-column-header div {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        @media (max-width: 1000px) {
+            .inventory-item-row {
+                grid-template-columns: 1.5fr 1fr 1fr 1fr;
+                gap: 8px;
+            }
+            .inventory-column-header {
+                grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="dashboard.html" class="btn-back">← Back to Dashboard</a>
+        <h1 style="font-weight: 200; font-size: clamp(1.2rem, 5vw, 2rem);">Inventory Registry</h1>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="search-bar" class="search-input" placeholder="🔍 Search product or category... (Expert Mode)" oninput="renderInventory(currentFilter); updateSearchSuggestions()">
+        <div id="search-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--glass); border: 1px solid var(--border); border-radius: 15px; max-height: 200px; overflow-y: auto; margin-top: 5px; z-index: 100;"></div>
+    </div>
+
+    <div class="summary-bar">
+        <div class="dropdown-container">
+            <div class="stat-pill" onclick="toggleDropdown('stockDropdown')">
+                <span class="alarm-dot" style="background: var(--accent); box-shadow: 0 0 15px var(--accent);"></span>
+                <span>Realtime stock level</span>
+            </div>
+            <div class="dropdown-menu" id="stockDropdown">
+                <div class="dropdown-item" onclick="filterStock('critical'); closeDropdown('stockDropdown')">
+                    <span class="alarm-dot glow-red"></span>
+                    <span>🔴 Critical Stocks (1 unit)</span>
+                </div>
+                <div class="dropdown-item" onclick="filterStock('warning'); closeDropdown('stockDropdown')">
+                    <span class="alarm-dot glow-yellow"></span>
+                    <span>🟡 Low Stocks (2-5 units)</span>
+                </div>
+                <div class="dropdown-item" onclick="refreshTable(); closeDropdown('stockDropdown')">
+                    <span class="alarm-dot glow-green"></span>
+                    <span>🟢 All Items</span>
+                </div>
+                <div class="dropdown-item" onclick="showRealtimeStockStats(); closeDropdown('stockDropdown')">
+                    <span class="alarm-dot" style="background: var(--accent); box-shadow: 0 0 15px var(--accent);"></span>
+                    <span>📊 Stock Statistics</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dropdown-container">
+            <div class="stat-pill" onclick="toggleDropdown('historyDropdown')">
+                <span class="alarm-dot" style="background: var(--green); box-shadow: 0 0 15px var(--green);"></span>
+                <span>Inventory History</span>
+            </div>
+            <div class="dropdown-menu" id="historyDropdown">
+                <div class="dropdown-item" onclick="showInventoryHistoryStats(); closeDropdown('historyDropdown')">
+                    <span class="alarm-dot glow-yellow"></span>
+                    <span>📊 Today's Activity</span>
+                </div>
+                <div class="dropdown-item" onclick="downloadInventoryCSV(); closeDropdown('historyDropdown')">
+                    <span class="alarm-dot glow-green"></span>
+                    <span>💾 Export History as CSV</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dropdown-container">
+            <div class="stat-pill" onclick="toggleDropdown('rankingDropdown')">
+                <span class="alarm-dot" style="background: var(--yellow); box-shadow: 0 0 15px var(--yellow);"></span>
+                <span>Order ranking</span>
+            </div>
+            <div class="dropdown-menu" id="rankingDropdown">
+                <div class="dropdown-item" onclick="generateOrderRanking(); closeDropdown('rankingDropdown')">
+                    <span class="alarm-dot glow-green"></span>
+                    <span>📈 Top 10 vs Low Demand</span>
+                </div>
+                <div class="dropdown-item" onclick="generateOrderRanking(); closeDropdown('rankingDropdown')">
+                    <span class="alarm-dot glow-yellow"></span>
+                    <span>⚠️ Restock Priority List</span>
+                </div>
+                <div class="dropdown-item" onclick="showRealtimeStockStats(); closeDropdown('rankingDropdown')">
+                    <span class="alarm-dot glow-red"></span>
+                    <span>🔴 Stock Health Analysis</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="dropdown-container">
+            <div class="stat-pill" onclick="toggleDropdown('fullInventoryDropdown')">
+                <span class="alarm-dot" style="background: var(--red); box-shadow: 0 0 15px var(--red);"></span>
+                <span>Full inventory</span>
+            </div>
+            <div class="dropdown-menu" id="fullInventoryDropdown">
+                <div class="dropdown-item" onclick="showFullInventoryAnalysis(); closeDropdown('fullInventoryDropdown')">
+                    <span class="alarm-dot glow-green"></span>
+                    <span>📦 Complete Analysis</span>
+                </div>
+                <div class="dropdown-item" onclick="openCurrentStockModal(); closeDropdown('fullInventoryDropdown')">
+                    <span class="alarm-dot glow-yellow"></span>
+                    <span>📊 By Category View</span>
+                </div>
+                <div class="dropdown-item" onclick="downloadCurrentStockCSV(); closeDropdown('fullInventoryDropdown')">
+                    <span class="alarm-dot glow-green"></span>
+                    <span>💾 Export Full Report</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="csv-button-group">
+        <button class="csv-button" onclick="openCurrentStockModal()">📊 Display Current Stock</button>
+        <button class="csv-button" onclick="openCSVImportModal()">📥 CSV Import Stocks</button>
+        <button class="csv-button" onclick="resetAllInventory()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">🔄 Reset All to Zero</button>
+    </div>
+
+    <!-- CSV EXPORT MODAL -->
+    <div class="modal-overlay" id="csvExportModal">
+        <div class="modal-content">
+            <div class="modal-header">📊 Export Inventory to CSV</div>
+            <div class="modal-body">
+                <div class="date-input-group">
+                    <label for="csvFromDate">From Date:</label>
+                    <input type="date" id="csvFromDate">
+                </div>
+                <div class="date-input-group">
+                    <label for="csvToDate">To Date:</label>
+                    <input type="date" id="csvToDate">
+                </div>
+                <div id="csvExportMessage"></div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button modal-button-cancel" onclick="closeCSVExportModal()">Cancel</button>
+                <button class="modal-button modal-button-confirm" onclick="proceedCSVExport()">Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV IMPORT MODAL - COMPREHENSIVE INVENTORY -->
+    <div class="modal-overlay" id="csvImportModal">
+        <div class="modal-content-large">
+            <div class="modal-top-bar">
+                <div class="modal-header">📦 Add Stock to Inventory Items</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-confirm" onclick="loadSoldCountsFromPOS()" style="background: var(--yellow); color: #020617;">🔄 Refresh Sales</button>
+                    <button class="modal-button modal-button-confirm" onclick="subtractOneFromAllItems()" style="background: #f59e0b; color: #020617;">➖ Sub 1 All</button>
+                    <button class="modal-button modal-button-confirm" onclick="addOneToAllItems()" style="background: #06b6d4; color: #020617;">➕ Add 1 to All</button>
+                    <button class="modal-button modal-button-confirm" onclick="resetAddCount()" style="background: #ef4444; color: white;">🔄 Reset Add Count</button>
+                    <button class="modal-button modal-button-cancel" onclick="exitCSVImportModal()">❌ Exit</button>
+                    <button class="modal-button modal-button-confirm" onclick="saveInventoryStocks()" style="background: var(--green);">💾 Save Stocks</button>
+                </div>
+            </div>
+            <div class="modal-body" id="csvImportBody">
+                <div id="inventoryCategoryContainer"></div>
+                <div id="csvImportMessage" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTHLY INVENTORY MODAL -->
+    <div class="modal-overlay" id="monthlyInventoryModal">
+        <div class="modal-content-large">
+            <div class="modal-top-bar">
+                <div class="modal-header">📅 Monthly Inventory Report</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-cancel" onclick="closeMonthlyInventoryModal()">❌ Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <!-- Date Range Filters -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                    <div class="date-input-group">
+                        <label for="monthlyFromDate" style="display: block; margin-bottom: 5px; font-size: 0.85rem;">From Date:</label>
+                        <input type="date" id="monthlyFromDate" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div class="date-input-group">
+                        <label for="monthlyToDate" style="display: block; margin-bottom: 5px; font-size: 0.85rem;">To Date:</label>
+                        <input type="date" id="monthlyToDate" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: flex-end;">
+                        <button class="modal-button modal-button-confirm" onclick="generateMonthlyInventoryReport()" style="flex: 1; background: var(--accent);">🔍 Generate Report</button>
+                    </div>
+                </div>
+                
+                <!-- Content Area (Monthly Inventory Report) -->
+                <div id="monthlyInventoryContent" style="margin-top: 15px; max-height: 400px; overflow-y: auto; background: rgba(255, 255, 255, 0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);"></div>
+            </div>
+            <div class="modal-buttons" style="padding: 15px 30px; border-top: 1px solid var(--border); gap: 10px; justify-content: flex-end;">
+                <button class="modal-button modal-button-confirm" onclick="downloadMonthlyInventoryCSV()" style="background: var(--accent);">📥 Download CSV</button>
+                <button class="modal-button modal-button-confirm" onclick="printMonthlyInventory()" style="background: var(--green);">🖨️ Print</button>
+                <button class="modal-button modal-button-confirm" onclick="resetMonthlyAddCount()" style="background: #f59e0b; color: #020617;">🔄 Reset Add Count</button>
+                <button class="modal-button modal-button-confirm" onclick="resetAllInventory()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">🔄 Reset All to Zero</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CURRENT STOCK DISPLAY MODAL -->
+    <div class="modal-overlay" id="currentStockModal" onclick="if(event.target.id === 'currentStockModal') closeCurrentStockModal()">
+        <div class="modal-content-large">
+            <div class="modal-top-bar">
+                <div class="modal-header">📊 Current Stock Availability</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-confirm" onclick="downloadCurrentStockCSV()" style="background: var(--green);">📥 Download CSV</button>
+                    <button class="modal-button modal-button-cancel" onclick="closeCurrentStockModal()">❌ Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="currentStockContent" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOCK HISTORY MODAL -->
+    <div class="modal-overlay" id="stockHistoryModal">
+        <div class="modal-content-large">
+            <div class="modal-top-bar">
+                <div class="modal-header">📋 Stock History & Current Inventory</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-confirm" onclick="toggleCurrentStocksView()" style="background: var(--accent);">📊 Current Stocks</button>
+                    <button class="modal-button modal-button-cancel" onclick="closeStockHistoryModal()">❌ Close</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <!-- User Name Input -->
+                <div style="margin-bottom: 15px; padding: 15px; background: rgba(56, 189, 248, 0.08); border: 1px solid var(--border); border-radius: 10px;">
+                    <label for="stockHistoryUserName" style="display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600;">👤 Added By (Your Name):</label>
+                    <input type="text" id="stockHistoryUserName" placeholder="Enter your name" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: white; font-size: 0.9rem;">
+                </div>
+                
+                <!-- Date Range Filters -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                    <div class="date-input-group">
+                        <label for="historyFromDate" style="display: block; margin-bottom: 5px; font-size: 0.85rem;">From Date:</label>
+                        <input type="date" id="historyFromDate" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div class="date-input-group">
+                        <label for="historyToDate" style="display: block; margin-bottom: 5px; font-size: 0.85rem;">To Date:</label>
+                        <input type="date" id="historyToDate" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: flex-end;">
+                        <button class="modal-button modal-button-confirm" onclick="searchStockHistory()" style="flex: 1; background: var(--accent);">🔍 Search</button>
+                    </div>
+                </div>
+                
+                <!-- Content Area (Toggle between History and Current Stocks) -->
+                <div id="stockHistoryContent" style="margin-top: 15px; max-height: 400px; overflow-y: auto; background: rgba(255, 255, 255, 0.02); padding: 15px; border-radius: 10px; border: 1px solid var(--border);"></div>
+            </div>
+            <div class="modal-buttons" style="padding: 15px 30px; border-top: 1px solid var(--border); gap: 10px; justify-content: flex-end;">
+                <button class="modal-button modal-button-confirm" onclick="searchStockHistory()">🔍 Search History</button>
+                <button class="modal-button modal-button-confirm" onclick="printStockHistory()">🖨️ Print</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Quick Adjust</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDebowWMBipkmv8S42x0JU-DQmzX0Zg420",
+            authDomain: "sangkalan-pos.firebaseapp.com",
+            databaseURL: "https://sangkalan-pos-default-rtdb.firebaseio.com",
+            projectId: "sangkalan-pos",
+            storageBucket: "sangkalan-pos.firebasestorage.app",
+            messagingSenderId: "654046188487",
+            appId: "1:654046188487:web:fef8f67d469d7235747fe2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const CURRENT_BRANCH = "Sangkalan Visayas";
+
+        let menuItems = [];
+        let currentFilter = 'all';
+
+        function renderInventory(filter = 'all') {
+            const container = document.getElementById('inventory-body');
+            const searchQuery = document.getElementById('search-bar').value.toLowerCase();
+            container.innerHTML = "";
+
+            menuItems.forEach(item => {
+                const s = parseInt(item.stock) || 0;
+                let statusClass = "glow-off";
+
+                if (s === 1) statusClass = "glow-red";
+                else if (s >= 2 && s <= 5) statusClass = "glow-yellow";
+                else if (s > 5) statusClass = "glow-green";
+
+                // Filter Logic
+                if (filter === 'critical' && s !== 1) return;
+                if (filter === 'warning' && (s < 2 || s > 5)) return;
+
+                // Search Logic
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery) ||
+                                     item.category.toLowerCase().includes(searchQuery);
+                if (!matchesSearch) return;
+
+                const row = document.createElement('tr');
+                if(filter !== 'all' || searchQuery !== "") row.className = "row-highlight";
+
+                row.innerHTML = `
+                    <td><span class="alarm-dot ${statusClass}"></span></td>
+                    <td style="font-weight:600;">${item.name}</td>
+                    <td style="color:#64748b; font-size:0.85rem;">${item.category}</td>
+                    <td>
+                        <input type="number" class="stock-input" value="${s}"
+                        oninput="updateStock(${item.id}, this.value)">
+                    </td>
+                    <td style="white-space: nowrap;">
+                        <button class="btn-adjust" onclick="adjust(${item.id}, 1)">+</button>
+                        <button class="btn-adjust" onclick="adjust(${item.id}, -1)">-</button>
+                    </td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updateStock(id, newVal) {
+            let item = menuItems.find(m => m.id === id);
+            if(item) {
+                item.stock = parseInt(newVal) || 0;
+                db.ref('menu/' + CURRENT_BRANCH + '/' + id).update({ stock: item.stock });
+                clearTimeout(window.renderTimeout);
+                window.renderTimeout = setTimeout(() => renderInventory(currentFilter), 800);
+            }
+        }
+
+        function adjust(id, amount) {
+            let item = menuItems.find(m => m.id === id);
+            if(item) {
+                item.stock = (parseInt(item.stock) || 0) + amount;
+                if(item.stock < 0) item.stock = 0;
+                db.ref('menu/' + CURRENT_BRANCH + '/' + id).update({ stock: item.stock });
+                renderInventory(currentFilter);
+            }
+        }
+
+        function filterStock(type) {
+            currentFilter = type;
+            renderInventory(type);
+        }
+
+        function refreshTable() {
+            currentFilter = 'all';
+            document.getElementById('search-bar').value = "";
+            renderInventory('all');
+        }
+
+        // --- EXPERT LEVEL FUNCTIONS ---
+        let stockStatsCache = {};
+
+        function calculateStockStats() {
+            let totalItems = menuItems.length;
+            let totalStock = 0;
+            let criticalCount = 0;
+            let warningCount = 0;
+            let healthyCount = 0;
+            let zeroStockCount = 0;
+
+            menuItems.forEach(item => {
+                const stock = parseInt(item.stock) || 0;
+                totalStock += stock;
+                if (stock === 0) zeroStockCount++;
+                else if (stock === 1) criticalCount++;
+                else if (stock >= 2 && stock <= 5) warningCount++;
+                else healthyCount++;
+            });
+
+            stockStatsCache = {
+                totalItems,
+                totalStock,
+                criticalCount,
+                warningCount,
+                healthyCount,
+                zeroStockCount,
+                averageStock: (totalStock / totalItems).toFixed(2),
+                healthPercentage: ((healthyCount / totalItems) * 100).toFixed(1)
+            };
+
+            return stockStatsCache;
+        }
+
+        function showRealtimeStockStats() {
+            const stats = calculateStockStats();
+            alert(`
+📊 REAL-TIME STOCK STATISTICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Total Items: ${stats.totalItems}
+📦 Total Stock: ${stats.totalStock} units
+📈 Average Stock/Item: ${stats.averageStock}
+🟢 Healthy (>5): ${stats.healthyCount}
+🟡 Warning (2-5): ${stats.warningCount}
+🔴 Critical (1): ${stats.criticalCount}
+⚫ Out of Stock (0): ${stats.zeroStockCount}
+📊 Health Status: ${stats.healthPercentage}% Healthy
+            `);
+        }
+
+        function generateOrderRanking() {
+            const ranking = menuItems
+                .sort((a, b) => (b.stock || 0) - (a.stock || 0))
+                .map((item, index) => `${index + 1}. ${item.name} - ${item.stock || 0} units`);
+            
+            const topSelling = ranking.slice(0, 10).join('\n');
+            const lowDemand = ranking.slice(-10).reverse().join('\n');
+            
+            alert(`
+📊 TOP 10 STOCKED ITEMS (Ready to Sell)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${topSelling}\n\n⚠️ LOW STOCK ITEMS (Reorder Priority)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${lowDemand}
+            `);
+        }
+
+        function showFullInventoryAnalysis() {
+            const categories = [...new Set(menuItems.map(item => item.category))].sort();
+            let analysis = '📦 COMPLETE INVENTORY ANALYSIS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n';
+            
+            let grandTotal = 0;
+            categories.forEach(category => {
+                const categoryItems = menuItems.filter(item => item.category === category);
+                const categoryStock = categoryItems.reduce((sum, item) => sum + (parseInt(item.stock) || 0), 0);
+                const categoryCount = categoryItems.length;
+                grandTotal += categoryStock;
+                analysis += `📂 ${category}\n  Items: ${categoryCount} | Total Stock: ${categoryStock}\n`;
+            });
+            
+            analysis += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nGRAND TOTAL: ${grandTotal} units`;
+            alert(analysis);
+        }
+
+        function showInventoryHistoryStats() {
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            
+            if (history.length === 0) {
+                alert('📋 No inventory history records found');
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayRecords = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate === today;
+            });
+            
+            let totalAdded = 0, totalSpoiled = 0, totalSold = 0;
+            todayRecords.forEach(record => {
+                totalAdded += record.totalAdded || 0;
+                totalSpoiled += record.totalSpoiled || 0;
+                totalSold += record.totalSold || 0;
+            });
+            
+            alert(`
+📊 TODAY'S INVENTORY ACTIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 Date: ${today}
+📝 Records: ${todayRecords.length}
+✅ Total Added: ${totalAdded} units
+⚠️ Total Spoiled: ${totalSpoiled} units
+💰 Total Sold: ${totalSold} units
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Net Change: +${totalAdded - totalSpoiled - totalSold} units
+            `);
+        }
+
+        function updateSearchSuggestions() {
+            const searchInput = document.getElementById('search-bar').value.toLowerCase();
+            const suggestionsDiv = document.getElementById('search-suggestions');
+            
+            if (!searchInput) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            const suggestions = [...new Set(
+                menuItems
+                    .filter(item => 
+                        item.name.toLowerCase().includes(searchInput) ||
+                        item.category.toLowerCase().includes(searchInput)
+                    )
+                    .slice(0, 5)
+                    .map(item => item.category)
+            )];
+            
+            if (suggestions.length === 0) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            suggestionsDiv.innerHTML = suggestions
+                .map(cat => `<div class="dropdown-item" onclick="document.getElementById('search-bar').value='${cat}'; renderInventory(currentFilter); updateSearchSuggestions()">${cat}</div>`)
+                .join('');
+            suggestionsDiv.style.display = 'block';
+        }
+
+        function resetAllInventory() {
+            if (confirm('⚠️ WARNING: This will reset ALL inventory items to ZERO stock. Are you sure you want to proceed?')) {
+                const timestamp = new Date().toISOString();
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-PH');
+                const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const dayStr = now.toLocaleDateString('en-PH', { weekday: 'long' });
+                
+                const resetRecord = {
+                    timestamp: timestamp,
+                    date: dateStr,
+                    day: dayStr,
+                    time: timeStr,
+                    branch: CURRENT_BRANCH,
+                    items: [],
+                    totalAdded: 0,
+                    totalSpoiled: 0,
+                    totalSold: 0,
+                    action: 'SYSTEM_RESET'
+                };
+                
+                let itemsReset = 0;
+                menuItems.forEach(item => {
+                    const previousStock = parseInt(item.stock) || 0;
+                    
+                    // Reset database stock
+                    item.stock = 0;
+                    db.ref('menu/' + CURRENT_BRANCH + '/' + item.id).update({ stock: 0 });
+                    
+                    // Reset modal fields if they exist
+                    const beginElement = document.getElementById(`begin_${item.id}`);
+                    const addElement = document.getElementById(`add_${item.id}`);
+                    const spoiledElement = document.getElementById(`spoiled_${item.id}`);
+                    const soldElement = document.getElementById(`sold_${item.id}`);
+                    const endingElement = document.getElementById(`ending_${item.id}`);
+                    
+                    if (beginElement) beginElement.textContent = '0';
+                    if (addElement) {
+                        addElement.value = '0';
+                    }
+                    if (spoiledElement) {
+                        spoiledElement.value = '0';
+                    }
+                    if (soldElement) {
+                        soldElement.value = '0';
+                    }
+                    if (endingElement) endingElement.textContent = '0';
+                    
+                    // Update ending count to trigger any dependent calculations
+                    if (addElement) {
+                        updateEndingCount(item.id);
+                    }
+                    
+                    // Record this reset in the inventory record
+                    resetRecord.items.push({
+                        itemId: item.id,
+                        itemName: item.name,
+                        category: item.category,
+                        beginningCount: previousStock,
+                        addedCount: 0,
+                        spoiledCount: 0,
+                        soldCount: previousStock,
+                        endingCount: 0
+                    });
+                    
+                    itemsReset++;
+                });
+                
+                // Record the reset action to Firebase and localStorage
+                recordStockHistory(resetRecord);
+                
+                renderInventory(currentFilter);
+                alert(`✅ Successfully reset ${itemsReset} items to zero stock! Reset recorded in history.`);
+            }
+        }
+
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+
+        function closeDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown) {
+                dropdown.classList.remove('show');
+            }
+        }
+
+        // Close all dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdownContainers = document.querySelectorAll('.dropdown-container');
+            dropdownContainers.forEach(container => {
+                if (!container.contains(event.target)) {
+                    const dropdown = container.querySelector('.dropdown-menu');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                }
+            });
+        });
+
+        // --- CSV EXPORT FUNCTIONS ---
+        let csvExportListener = null;
+        
+        function openCSVExportModal() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('csvFromDate').value = today;
+            document.getElementById('csvToDate').value = today;
+            document.getElementById('csvExportMessage').innerHTML = '';
+            
+            // Set up real-time listener for stock updates
+            if (csvExportListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', csvExportListener);
+            }
+            csvExportListener = db.ref('menu/' + CURRENT_BRANCH).on('value', (snapshot) => {
+                const menuData = snapshot.val();
+                if (menuData) {
+                    Object.keys(menuData).forEach(itemId => {
+                        const firebaseItem = menuData[itemId];
+                        const localItem = menuItems.find(m => m.id === itemId);
+                        if (localItem && firebaseItem.stock !== undefined) {
+                            localItem.stock = firebaseItem.stock;
+                        }
+                    });
+                    console.log('📊 Real-time stock update for CSV Export');
+                }
+            });
+            
+            document.getElementById('csvExportModal').classList.add('active');
+        }
+
+        function closeCSVExportModal() {
+            document.getElementById('csvExportModal').classList.remove('active');
+            if (csvExportListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', csvExportListener);
+                csvExportListener = null;
+            }
+        }
+
+        function proceedCSVExport() {
+            const fromDate = document.getElementById('csvFromDate').value;
+            const toDate = document.getElementById('csvToDate').value;
+
+            if (!fromDate || !toDate) {
+                document.getElementById('csvExportMessage').innerHTML = '<div class="success-message" style="color: var(--red);">❌ Please select both dates</div>';
+                return;
+            }
+
+            if (fromDate > toDate) {
+                document.getElementById('csvExportMessage').innerHTML = '<div class="success-message" style="color: var(--red);">❌ From date must be before To date</div>';
+                return;
+            }
+
+            exportInventoryToCSV(fromDate, toDate);
+        }
+
+        function exportInventoryToCSV(fromDate, toDate) {
+            let csvContent = 'INVENTORY EXPORT REPORT\n';
+            csvContent += `Date Range: ${fromDate} to ${toDate}\n`;
+            csvContent += `Exported: ${new Date().toLocaleString('en-PH')}\n\n`;
+            csvContent += 'Item Name,Category,Current Stock,Status\n';
+
+            menuItems.forEach(item => {
+                const stock = parseInt(item.stock) || 0;
+                let status = 'OK';
+                if (stock === 1) status = 'CRITICAL';
+                else if (stock >= 2 && stock <= 5) status = 'WARNING';
+                else if (stock === 0) status = 'OUT OF STOCK';
+
+                csvContent += `"${item.name}","${item.category}",${stock},"${status}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const now = new Date();
+            const fileName = `Inventory_Export_${now.toLocaleDateString('en-PH').replace(/\//g, '-')}_${now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }).replace(/:/g, '-')}.csv`;
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            document.getElementById('csvExportMessage').innerHTML = '<div class="success-message">✅ Inventory exported successfully!</div>';
+            setTimeout(() => closeCSVExportModal(), 1500);
+        }
+
+        // --- CSV IMPORT FUNCTIONS ---
+        let stockUpdateListener = null; // Track listener for cleanup
+        let soldCountsListener = null; // Track real-time sold counts listener
+        
+        function openCSVImportModal() {
+            document.getElementById('csvImportMessage').innerHTML = '';
+            renderInventoryByCategory();
+            loadSoldCountsFromPOS(); // Load sold items from POS
+            
+            // Set up real-time listener for stock updates from POS orders
+            if (stockUpdateListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', stockUpdateListener);
+            }
+            stockUpdateListener = db.ref('menu/' + CURRENT_BRANCH).on('value', (snapshot) => {
+                const menuData = snapshot.val();
+                if (menuData) {
+                    // Update menu items with latest stock from Firebase
+                    Object.keys(menuData).forEach(itemId => {
+                        const firebaseItem = menuData[itemId];
+                        const localItem = menuItems.find(m => m.id === itemId);
+                        if (localItem && firebaseItem.stock !== undefined) {
+                            localItem.stock = firebaseItem.stock;
+                            
+                            // Update the UI display if modal is still open
+                            const beginElement = document.getElementById(`begin_${itemId}`);
+                            if (beginElement) {
+                                beginElement.textContent = firebaseItem.stock;
+                            }
+                            
+                            // Recalculate ending count when beginning changes
+                            updateEndingCount(itemId);
+                        }
+                    });
+                    console.log('📊 Real-time stock update received from Firebase (CSV Import)');
+                }
+            });
+            
+            // Set up real-time listener for sold items from POS
+            if (soldCountsListener) {
+                db.ref('orders/' + CURRENT_BRANCH).off('value', soldCountsListener);
+            }
+            soldCountsListener = db.ref('orders/' + CURRENT_BRANCH).on('value', (snapshot) => {
+                const ordersData = snapshot.val();
+                if (ordersData) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const soldCounts = {};
+                    let totalOrdersProcessed = 0;
+                    
+                    // Calculate sold counts for today from all orders
+                    Object.values(ordersData).forEach(order => {
+                        const orderDate = order.timestamp ? new Date(order.timestamp).toISOString().split('T')[0] : null;
+                        
+                        if (orderDate === today && order.items) {
+                            totalOrdersProcessed++;
+                            // Count sold items from this order
+                            Object.values(order.items).forEach(item => {
+                                const itemName = (item.itemName || item.name || '').trim();
+                                // Handle qty which can be number or string
+                                let quantity = 1;
+                                if (item.qty !== undefined) {
+                                    quantity = parseInt(item.qty) || 1;
+                                } else if (item.quantity !== undefined) {
+                                    quantity = parseInt(item.quantity) || 1;
+                                }
+                                
+                                if (itemName) {
+                                    soldCounts[itemName] = (soldCounts[itemName] || 0) + quantity;
+                                }
+                            });
+                        }
+                    });
+                    
+                    console.log(`📦 Real-time: Processing ${totalOrdersProcessed} orders for today. Sold counts:`, soldCounts);
+                    
+                    // Auto-update sold counts in the modal
+                    menuItems.forEach(item => {
+                        const soldElement = document.getElementById(`sold_${item.id}`);
+                        if (soldElement) {
+                            const newSoldCount = soldCounts[item.name] || 0;
+                            const currentSoldCount = parseInt(soldElement.value) || 0;
+                            
+                            // Only update if different (avoid unnecessary updates)
+                            if (newSoldCount !== currentSoldCount) {
+                                soldElement.value = newSoldCount;
+                                updateEndingCount(item.id);
+                                console.log(`💰 Auto-updated sold count for "${item.name}": ${currentSoldCount} → ${newSoldCount}`);
+                            }
+                        }
+                    });
+                }
+            });
+            
+            document.getElementById('csvImportModal').classList.add('active');
+        }
+
+        function closeCSVImportModal() {
+            document.getElementById('csvImportModal').classList.remove('active');
+            // Clean up listeners when modal closes
+            if (stockUpdateListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', stockUpdateListener);
+                stockUpdateListener = null;
+            }
+            if (soldCountsListener) {
+                db.ref('orders/' + CURRENT_BRANCH).off('value', soldCountsListener);
+                soldCountsListener = null;
+            }
+        }
+
+        function exitCSVImportModal() {
+            if (confirm('Are you sure you want to exit without saving?')) {
+                closeCSVImportModal();
+            }
+        }
+
+        // --- LOAD SOLD COUNTS FROM POS ORDERS ---
+        function loadSoldCountsFromPOS() {
+            const today = new Date().toISOString().split('T')[0];
+            const messageDiv = document.getElementById('csvImportMessage');
+            
+            // Show loading message
+            if (messageDiv) {
+                messageDiv.innerHTML = '<div style="color: var(--accent); font-weight: 600; text-align: center;">⏳ Refreshing sold counts from POS...</div>';
+            }
+            
+            db.ref('orders/' + CURRENT_BRANCH).once('value', (snapshot) => {
+                const ordersData = snapshot.val();
+                if (!ordersData) {
+                    console.log('ℹ️ No orders found for today');
+                    if (messageDiv) {
+                        messageDiv.innerHTML = '<div style="color: var(--yellow); font-weight: 600; text-align: center;">⚠️ No orders found for today yet</div>';
+                    }
+                    return;
+                }
+
+                // Calculate sold counts for today
+                const soldCounts = {};
+                let totalOrdersProcessed = 0;
+                let itemsUpdated = 0;
+
+                Object.values(ordersData).forEach(order => {
+                    // Check if order is from today
+                    const orderDate = order.timestamp ? new Date(order.timestamp).toISOString().split('T')[0] : null;
+                    
+                    if (orderDate === today && order.items) {
+                        totalOrdersProcessed++;
+                        // Count sold items
+                        Object.values(order.items).forEach(item => {
+                            const itemName = (item.itemName || item.name || '').trim();
+                            // Handle qty which can be number or string
+                            let quantity = 1;
+                            if (item.qty !== undefined) {
+                                quantity = parseInt(item.qty) || 1;
+                            } else if (item.quantity !== undefined) {
+                                quantity = parseInt(item.quantity) || 1;
+                            }
+                            
+                            if (itemName) {
+                                soldCounts[itemName] = (soldCounts[itemName] || 0) + quantity;
+                            }
+                        });
+                    }
+                });
+
+                console.log(`📊 Loaded ${totalOrdersProcessed} orders for today. Sold counts:`, soldCounts);
+
+                // Update sold input fields with counts from POS
+                menuItems.forEach(item => {
+                    const soldElement = document.getElementById(`sold_${item.id}`);
+                    if (soldElement) {
+                        const soldCount = soldCounts[item.name] || 0;
+                        const previousSoldCount = parseInt(soldElement.value) || 0;
+                        
+                        if (soldCount !== previousSoldCount) {
+                            soldElement.value = soldCount;
+                            updateEndingCount(item.id);
+                            itemsUpdated++;
+                            console.log(`✅ Loaded sold count for "${item.name}": ${previousSoldCount} → ${soldCount}`);
+                        }
+                    }
+                });
+                
+                // Show success message
+                if (messageDiv) {
+                    messageDiv.innerHTML = `<div style="color: var(--green); font-weight: 600; text-align: center;">✅ Refreshed! ${totalOrdersProcessed} orders processed, ${itemsUpdated} items updated</div>`;
+                    setTimeout(() => {
+                        if (messageDiv) messageDiv.innerHTML = '';
+                    }, 3000);
+                }
+            });
+        }
+
+        function saveInventoryStocks() {
+            const timestamp = new Date().toISOString();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-PH');
+            const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dayStr = now.toLocaleDateString('en-PH', { weekday: 'long' });
+            
+            const inventoryRecord = {
+                timestamp: timestamp,
+                date: dateStr,
+                day: dayStr,
+                time: timeStr,
+                branch: CURRENT_BRANCH,
+                items: [],
+                totalAdded: 0,
+                totalSpoiled: 0,
+                totalSold: 0
+            };
+
+            let hasChanges = false;
+            let savedCount = 0;
+
+            menuItems.forEach(item => {
+                const beginning = parseInt(document.getElementById(`begin_${item.id}`).textContent) || 0;
+                const added = parseInt(document.getElementById(`add_${item.id}`).value) || 0;
+                const spoiled = parseInt(document.getElementById(`spoiled_${item.id}`).value) || 0;
+                const sold = parseInt(document.getElementById(`sold_${item.id}`).value) || 0;
+                const ending = Math.max(0, beginning + added - spoiled - sold);
+
+                // Always save the ending count to the actual stock
+                if (ending !== beginning) {
+                    item.stock = ending;
+                    db.ref('menu/' + CURRENT_BRANCH + '/' + item.id).update({ stock: ending });
+                    savedCount++;
+                }
+
+                // Record if there were any movements
+                if (added > 0 || spoiled > 0 || sold > 0) {
+                    hasChanges = true;
+                    
+                    inventoryRecord.items.push({
+                        itemId: item.id,
+                        itemName: item.name,
+                        category: item.category,
+                        beginningCount: beginning,
+                        addedCount: added,
+                        spoiledCount: spoiled,
+                        soldCount: sold,
+                        endingCount: ending
+                    });
+
+                    inventoryRecord.totalAdded += added;
+                    inventoryRecord.totalSpoiled += spoiled;
+                    inventoryRecord.totalSold += sold;
+                }
+            });
+
+            if (savedCount === 0) {
+                document.getElementById('csvImportMessage').innerHTML = '<div class="success-message" style="color: var(--yellow);">⚠️ No stock changes to save</div>';
+                return;
+            }
+
+            if (hasChanges) {
+                recordStockHistory(inventoryRecord);
+            }
+
+            document.getElementById('csvImportMessage').innerHTML = `<div class="success-message">✅ ${savedCount} items saved successfully to inventory!</div>`;
+            renderInventory();
+            setTimeout(() => closeCSVImportModal(), 2000);
+        }
+
+        function renderInventoryByCategory() {
+            const categories = [...new Set(menuItems.map(item => item.category))].sort();
+            let html = '';
+            
+            categories.forEach(category => {
+                const categoryItems = menuItems.filter(item => item.category === category).sort((a, b) => a.name.localeCompare(b.name));
+                
+                html += `<div class="category-section">
+                    <div class="category-title">📂 ${category}</div>`;
+                
+                categoryItems.forEach(item => {
+                    const currentStock = parseInt(item.stock) || 0;
+                    html += `
+                        <div class="inventory-item-row">
+                            <div class="inventory-item-column">
+                                <label style="font-weight: 600; text-transform: none; letter-spacing: normal; color: #cbd5e1;">${item.name}</label>
+                            </div>
+                            <div class="inventory-item-column">
+                                <div class="inventory-item-label">Beginning</div>
+                                <div class="inventory-item-display" id="begin_${item.id}">${currentStock}</div>
+                            </div>
+                            <div class="inventory-item-column">
+                                <div class="inventory-item-label">Add Count</div>
+                                <input type="number" class="inventory-item-input" id="add_${item.id}" placeholder="0" min="0" value="0" onchange="updateEndingCount('${item.id}')">
+                            </div>
+                            <div class="inventory-item-column">
+                                <div class="inventory-item-label">Spoiled</div>
+                                <input type="number" class="inventory-item-input" id="spoiled_${item.id}" placeholder="0" min="0" value="0" onchange="updateEndingCount('${item.id}')">
+                            </div>
+                            <div class="inventory-item-column">
+                                <div class="inventory-item-label">Sold</div>
+                                <input type="number" class="inventory-item-input" id="sold_${item.id}" placeholder="0" min="0" value="0" onchange="updateEndingCount('${item.id}')">
+                            </div>
+                            <div class="inventory-item-column">
+                                <div class="inventory-item-label">Ending</div>
+                                <div class="inventory-item-display" id="ending_${item.id}">${currentStock}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            document.getElementById('inventoryCategoryContainer').innerHTML = html;
+        }
+
+        function addOneToAllItems() {
+            menuItems.forEach(item => {
+                const addInput = document.getElementById(`add_${item.id}`);
+                if (addInput) {
+                    addInput.value = (parseInt(addInput.value) || 0) + 1;
+                    updateEndingCount(item.id);
+                }
+            });
+        }
+
+        function subtractOneFromAllItems() {
+            menuItems.forEach(item => {
+                const addInput = document.getElementById(`add_${item.id}`);
+                if (addInput) {
+                    const currentValue = parseInt(addInput.value) || 0;
+                    addInput.value = Math.max(0, currentValue - 1);
+                    updateEndingCount(item.id);
+                }
+            });
+        }
+
+        function resetAddCount() {
+            menuItems.forEach(item => {
+                const addInput = document.getElementById(`add_${item.id}`);
+                if (addInput) {
+                    addInput.value = 0;
+                    updateEndingCount(item.id);
+                }
+            });
+        }
+
+        function updateEndingCount(itemId) {
+            const beginning = parseInt(document.getElementById(`begin_${itemId}`).textContent) || 0;
+            const added = parseInt(document.getElementById(`add_${itemId}`).value) || 0;
+            const spoiled = parseInt(document.getElementById(`spoiled_${itemId}`).value) || 0;
+            const sold = parseInt(document.getElementById(`sold_${itemId}`).value) || 0;
+            
+            const ending = beginning + added - spoiled - sold;
+            document.getElementById(`ending_${itemId}`).textContent = Math.max(0, ending);
+        }
+
+        // --- STOCK HISTORY RECORDING ---
+        function recordStockHistory(record) {
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            
+            // Add user name to record
+            const userName = localStorage.getItem('stockHistoryUserName') || 'UNKNOWN';
+            record.addedBy = userName;
+            
+            history.push(record);
+            localStorage.setItem(historyKey, JSON.stringify(history));
+            
+            db.ref('stockHistory/' + CURRENT_BRANCH).push(record);
+        }
+
+        // --- STOCK HISTORY MODAL FUNCTIONS ---
+        let isShowingCurrentStocks = false;
+        let historyModalListener = null;
+        
+        function openStockHistoryModal() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('historyFromDate').value = today;
+            document.getElementById('historyToDate').value = today;
+            document.getElementById('stockHistoryContent').innerHTML = '';
+            
+            // Set up real-time listener for live inventory updates
+            if (historyModalListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', historyModalListener);
+            }
+            historyModalListener = db.ref('menu/' + CURRENT_BRANCH).on('value', (snapshot) => {
+                const menuData = snapshot.val();
+                if (menuData) {
+                    // Update menu items with latest stock from Firebase
+                    Object.keys(menuData).forEach(itemId => {
+                        const firebaseItem = menuData[itemId];
+                        const localItem = menuItems.find(m => m.id === itemId);
+                        if (localItem && firebaseItem.stock !== undefined) {
+                            localItem.stock = firebaseItem.stock;
+                        }
+                    });
+                    // Refresh current stocks display if showing
+                    if (isShowingCurrentStocks) {
+                        displayCurrentStocks();
+                    }
+                    console.log('📊 Real-time stock update received from Firebase (Stock History)');
+                }
+            });
+            
+            // Restore user name if previously saved
+            const savedUserName = localStorage.getItem('stockHistoryUserName');
+            if (savedUserName) {
+                document.getElementById('stockHistoryUserName').value = savedUserName;
+            }
+            
+            document.getElementById('stockHistoryModal').classList.add('active');
+            // Display current stocks immediately when modal opens
+            isShowingCurrentStocks = true;
+            displayCurrentStocks();
+        }
+
+        function closeStockHistoryModal() {
+            document.getElementById('stockHistoryModal').classList.remove('active');
+            // Clean up listener when modal closes
+            if (historyModalListener) {
+                db.ref('menu/' + CURRENT_BRANCH).off('value', historyModalListener);
+                historyModalListener = null;
+            }
+        }
+        
+        function toggleCurrentStocksView() {
+            isShowingCurrentStocks = !isShowingCurrentStocks;
+            if (isShowingCurrentStocks) {
+                displayCurrentStocks();
+            } else {
+                searchStockHistory();
+            }
+        }
+        
+        function displayCurrentStocks(containerId = 'stockHistoryContent') {
+            // Get today's history records to pull movement data
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayRecords = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate === today;
+            });
+            
+            // Build item movements from today's history
+            const itemMovements = {};
+            menuItems.forEach(menuItem => {
+                itemMovements[menuItem.id] = {
+                    itemId: menuItem.id,
+                    itemName: menuItem.name,
+                    category: menuItem.category || 'Uncategorized',
+                    beginningCount: 0,
+                    totalAdded: 0,
+                    totalSpoiled: 0,
+                    totalSold: 0,
+                    endingCount: menuItem.stock || 0,
+                    currentStock: menuItem.stock || 0
+                };
+            });
+            
+            // Update with movements from today's history
+            todayRecords.forEach(record => {
+                if (record.items && Array.isArray(record.items)) {
+                    record.items.forEach(item => {
+                        if (itemMovements[item.itemId]) {
+                            itemMovements[item.itemId].beginningCount = item.beginningCount;
+                            itemMovements[item.itemId].totalAdded += item.addedCount || 0;
+                            itemMovements[item.itemId].totalSpoiled += item.spoiledCount || 0;
+                            itemMovements[item.itemId].totalSold += item.soldCount || 0;
+                            itemMovements[item.itemId].endingCount = item.endingCount;
+                        }
+                    });
+                }
+            });
+            
+            // Convert to array and sort by category
+            const items = Object.values(itemMovements);
+            const categories = [...new Set(items.map(i => i.category))].sort();
+
+            // Build report HTML matching Monthly Inventory style
+            let html = `
+                <div style="background: white; color: #333; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; font-size: 12px;">
+                    
+                    <!-- Header -->
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #333; padding-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: bold;">🍽️ SANGKALAN RESTAURANT</div>
+                        <div style="font-size: 16px; font-weight: bold;">Current Stock Report</div>
+                        <div style="font-size: 13px; color: #666; margin-top: 5px;">
+                            Date: <strong>${today}</strong>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Generated: ${new Date().toLocaleString('en-PH')}</div>
+                    </div>
+
+                    <!-- Report Content -->
+                    <div style="max-height: 550px; overflow-y: auto;">
+            `;
+
+            // Group items by category and display
+            categories.forEach(category => {
+                const categoryItems = items.filter(i => i.category === category);
+                    
+                    html += `
+                        <div style="margin-bottom: 15px;">
+                            <div style="background-color: #f0f0f0; padding: 8px 10px; font-weight: bold; border-radius: 3px; margin-bottom: 8px; border-left: 4px solid #e74c3c;">
+                                📂 ${category}
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                <thead>
+                                    <tr style="background-color: #e8e8e8;">
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: left;">Item Name</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Begin</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Add</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Spoiled</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Sold</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">End</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    let categoryTotalBegin = 0;
+                    let categoryTotalAdd = 0;
+                    let categoryTotalSpoiled = 0;
+                    let categoryTotalSold = 0;
+                    let categoryTotalEnd = 0;
+
+                    categoryItems.forEach(item => {
+                        categoryTotalBegin += item.beginningCount || 0;
+                        categoryTotalAdd += item.totalAdded || 0;
+                        categoryTotalSpoiled += item.totalSpoiled || 0;
+                        categoryTotalSold += item.totalSold || 0;
+                        categoryTotalEnd += item.endingCount || 0;
+
+                        html += `
+                            <tr style="background-color: #fff; border-bottom: 1px solid #eee;">
+                                <td style="border: 1px solid #ccc; padding: 6px;">${item.itemName}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #f5f5f5;">${item.beginningCount || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e8f5e9;">+${item.totalAdded || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #ffebee;">-${item.totalSpoiled || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #fff3e0;">-${item.totalSold || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e3f2fd; font-weight: bold;">${item.endingCount || 0}</td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                    <tr style="background-color: #fff9e6; font-weight: bold;">
+                                        <td style="border: 1px solid #ccc; padding: 6px;">SUBTOTAL</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">${categoryTotalBegin}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e8f5e9;">+${categoryTotalAdd}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #ffebee;">-${categoryTotalSpoiled}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #fff3e0;">-${categoryTotalSold}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e3f2fd;">${categoryTotalEnd}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+
+                // Grand totals
+                let grandTotalBegin = 0, grandTotalAdd = 0, grandTotalSpoiled = 0, grandTotalSold = 0, grandTotalEnd = 0;
+                
+                items.forEach(item => {
+                    grandTotalBegin += item.beginningCount || 0;
+                    grandTotalAdd += item.totalAdded || 0;
+                    grandTotalSpoiled += item.totalSpoiled || 0;
+                    grandTotalSold += item.totalSold || 0;
+                    grandTotalEnd += item.endingCount || 0;
+                });
+
+                html += `
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 3px solid #333;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-weight: bold;">
+                            <tr style="background-color: #333; color: white;">
+                                <td style="border: 1px solid #333; padding: 8px;">GRAND TOTAL</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">${grandTotalBegin}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">+${grandTotalAdd}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">-${grandTotalSpoiled}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">-${grandTotalSold}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">${grandTotalEnd}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+
+            html += `
+                    </div>
+                    <!-- Footer -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; text-align: center; font-size: 10px; color: #888;">
+                        <p>This is an official current stock report from Sangkalan Restaurant</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById(containerId).innerHTML = html;
+        }
+
+        function searchStockHistory() {
+            // Save user name
+            const userName = document.getElementById('stockHistoryUserName').value.trim() || 'UNKNOWN';
+            localStorage.setItem('stockHistoryUserName', userName);
+            
+            const fromDate = document.getElementById('historyFromDate').value;
+            const toDate = document.getElementById('historyToDate').value;
+
+            if (!fromDate || !toDate) {
+                document.getElementById('stockHistoryContent').innerHTML = '<div class="success-message" style="color: var(--red);">❌ Please select both dates</div>';
+                return;
+            }
+
+            if (fromDate > toDate) {
+                document.getElementById('stockHistoryContent').innerHTML = '<div class="success-message" style="color: var(--red);">❌ From date must be before To date</div>';
+                return;
+            }
+
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            if (filteredHistory.length === 0) {
+                document.getElementById('stockHistoryContent').innerHTML = '<p style="color: #cbd5e1; text-align: center; padding: 20px;">No records found for this date range</p>';
+                return;
+            }
+
+            // Create print-friendly template
+            let printTemplate = `
+                <div style="background: white; color: #333; padding: 30px; border-radius: 10px; font-family: Arial, sans-serif;">
+                    <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">🍽️ SANGKALAN RESTAURANT</div>
+                        <div style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Complete Inventory Report</div>
+                        <div style="font-size: 12px; color: #666;">Report Period: ${fromDate} to ${toDate}</div>
+                        <div style="font-size: 12px; color: #666;">Generated: ${new Date().toLocaleString('en-PH')}</div>
+                        <div style="font-size: 12px; color: #666;">Added By: ${userName}</div>
+                    </div>
+            `;
+
+            filteredHistory.forEach(record => {
+                const isComprehensive = record.items && record.items[0] && record.items[0].beginningCount !== undefined;
+                
+                if (isComprehensive) {
+                    printTemplate += `
+                        <div style="margin-top: 20px; page-break-inside: avoid;">
+                            <div style="background-color: #e8f4f8; padding: 10px; font-weight: bold; margin-bottom: 10px; border-radius: 3px;">
+                                📅 ${record.date} | ⏰ ${record.time} | 📆 ${record.day}
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 15px;">
+                                <thead>
+                                    <tr style="background-color: #d3d3d3;">
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: left;">Item Name</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 10%;">Category</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 8%;">Begin</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 8%;">Add</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 8%;">Spoiled</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 8%;">Sold</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 8%;">End</th>
+                                        <th style="border: 1px solid #999; padding: 8px; text-align: center; width: 10%;">Current Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    let categoriesSeen = new Set();
+                    record.items.forEach(item => {
+                        // Get current stock from menuItems
+                        const currentItem = menuItems.find(m => m.id === item.itemId);
+                        const currentStock = currentItem ? currentItem.stock : 'N/A';
+                        
+                        if (!categoriesSeen.has(item.category)) {
+                            printTemplate += `<tr style="background-color: #f0f0f0;"><td colspan="8" style="border: 1px solid #999; padding: 8px; font-weight: bold;">📂 ${item.category}</td></tr>`;
+                            categoriesSeen.add(item.category);
+                        }
+                        
+                        printTemplate += `
+                            <tr style="background-color: #fff;">
+                                <td style="border: 1px solid #999; padding: 8px; text-align: left;">${item.itemName}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; font-size: 10px;">${item.category}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center;">${item.beginningCount}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; background-color: #e8f5e9;">+${item.addedCount}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; background-color: #ffebee;">-${item.spoiledCount}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; background-color: #fff3e0;">-${item.soldCount}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; font-weight: bold; background-color: #e3f2fd;">${item.endingCount}</td>
+                                <td style="border: 1px solid #999; padding: 8px; text-align: center; font-weight: bold; background-color: #f3e5f5;">${currentStock}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    printTemplate += `
+                        <tr style="background-color: #fff9e6; font-weight: bold;">
+                            <td colspan="2" style="border: 1px solid #999; padding: 8px;"><strong>TOTALS</strong></td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">-</td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">+${record.totalAdded}</td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">-${record.totalSpoiled}</td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">-${record.totalSold}</td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">-</td>
+                            <td style="border: 1px solid #999; padding: 8px; text-align: center;">-</td>
+                        </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+
+            printTemplate += `
+                    <div style="margin-top: 30px; text-align: center; font-size: 11px; color: #666; border-top: 1px solid #999; padding-top: 15px;">
+                        <p>This is an official inventory report from Sangkalan Restaurant</p>
+                        <p>For more information, please contact the management.</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('stockHistoryContent').innerHTML = printTemplate;
+        }
+
+        function downloadInventoryCSV() {
+            const fromDate = document.getElementById('historyFromDate').value;
+            const toDate = document.getElementById('historyToDate').value;
+            const userName = document.getElementById('stockHistoryUserName').value.trim() || 'UNKNOWN';
+
+            if (!fromDate || !toDate) {
+                alert('⚠️ Please select both dates first');
+                return;
+            }
+
+            if (fromDate > toDate) {
+                alert('❌ From date must be before To date');
+                return;
+            }
+
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            if (filteredHistory.length === 0) {
+                alert('⚠️ No inventory records found for this date range');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = 'SANGKALAN RESTAURANT - INVENTORY REPORT\n';
+            csvContent += 'Branch: ' + CURRENT_BRANCH + '\n';
+            csvContent += 'Report Period: ' + fromDate + ' to ' + toDate + '\n';
+            csvContent += 'Generated By: ' + userName + '\n';
+            csvContent += 'Generated Date: ' + new Date().toLocaleString('en-PH') + '\n\n';
+
+            filteredHistory.forEach((record, recordIndex) => {
+                const isComprehensive = record.items && record.items[0] && record.items[0].beginningCount !== undefined;
+                const addedBy = record.addedBy || 'UNKNOWN';
+                
+                csvContent += `\nRecord ${recordIndex + 1}\n`;
+                csvContent += `Date: ${record.date}, Time: ${record.time}, Day: ${record.day}\n`;
+                csvContent += `Added By: ${addedBy}\n`;
+                csvContent += `=====================================\n`;
+
+                if (isComprehensive) {
+                    csvContent += 'Item Name,Category,Beginning Count,Added Count,Spoiled Count,Sold Count,Ending Count\n';
+                    
+                    record.items.forEach(item => {
+                        csvContent += `"${item.itemName}","${item.category}",${item.beginningCount},${item.addedCount},${item.spoiledCount},${item.soldCount},${item.endingCount}\n`;
+                    });
+
+                    csvContent += `\nTOTALS,-,${record.totalAdded || 0},${record.totalSpoiled || 0},${record.totalSold || 0}\n`;
+                } else {
+                    csvContent += 'Item Name,Previous Stock,Quantity Added,New Stock\n';
+                    
+                    record.items.forEach(item => {
+                        csvContent += `"${item.itemName}",${item.previousStock},${item.quantityAdded},${item.newStock}\n`;
+                    });
+                }
+
+                csvContent += '\n';
+            });
+
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'inventory_report_' + fromDate + '_to_' + toDate + '.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('✅ CSV downloaded successfully');
+        }
+
+        function downloadInventoryPDF() {
+            const fromDate = document.getElementById('historyFromDate').value;
+            const toDate = document.getElementById('historyToDate').value;
+            const userName = document.getElementById('stockHistoryUserName').value.trim() || 'UNKNOWN';
+
+            if (!fromDate || !toDate) {
+                alert('⚠️ Please select both dates first');
+                return;
+            }
+
+            if (fromDate > toDate) {
+                alert('❌ From date must be before To date');
+                return;
+            }
+
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            if (filteredHistory.length === 0) {
+                alert('⚠️ No inventory records found for this date range');
+                return;
+            }
+
+            showNotification('📄 Generating PDF...');
+
+            // Create HTML for PDF
+            let pdfHTML = `
+                <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #333; padding-bottom: 20px;">
+                        <h2 style="margin: 0 0 5px 0;">🍽️ SANGKALAN RESTAURANT WEST AVE.</h2>
+                        <h3 style="margin: 0 0 10px 0; color: #555;">Complete Inventory Report</h3>
+                        <p style="margin: 0; color: #666; font-size: 12px;">Report Period: <strong>${fromDate}</strong> to <strong>${toDate}</strong></p>
+                        <p style="margin: 5px 0 0 0; color: #999; font-size: 11px;">Generated by: ${userName} | ${new Date().toLocaleString('en-PH')}</p>
+                    </div>
+            `;
+
+            filteredHistory.forEach((record, index) => {
+                const isComprehensive = record.items && record.items[0] && record.items[0].beginningCount !== undefined;
+                const addedBy = record.addedBy || 'UNKNOWN';
+                const recordDateTime = `${record.date} | ${record.time} | ${record.day}`;
+
+                pdfHTML += `
+                    <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                        <p style="background: #e8f4f8; padding: 10px; margin: 0 0 10px 0; font-weight: bold; border-radius: 3px;">
+                            📅 ${recordDateTime} | 👤 ${addedBy}
+                        </p>
+                `;
+
+                if (isComprehensive) {
+                    pdfHTML += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;">
+                            <tr style="background: #d3d3d3;">
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: left;">Item Name</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 70px;">Begin</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 70px;">Add</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 70px;">Spoiled</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 70px;">Sold</th>
+                                <th style="border: 1px solid #ccc; padding: 8px; text-align: center; width: 70px;">End</th>
+                            </tr>
+                    `;
+
+                    record.items.forEach(item => {
+                        pdfHTML += `
+                            <tr style="background: #f9f9f9;">
+                                <td style="border: 1px solid #eee; padding: 6px;">${item.itemName}</td>
+                                <td style="border: 1px solid #eee; padding: 6px; text-align: center;">${item.beginningCount}</td>
+                                <td style="border: 1px solid #eee; padding: 6px; text-align: center; background: #f0f8f0;">+${item.addedCount}</td>
+                                <td style="border: 1px solid #eee; padding: 6px; text-align: center; background: #f8f0f0;">-${item.spoiledCount}</td>
+                                <td style="border: 1px solid #eee; padding: 6px; text-align: center; background: #f8f4f0;">-${item.soldCount}</td>
+                                <td style="border: 1px solid #eee; padding: 6px; text-align: center; background: #f0f4f8; font-weight: bold;">${item.endingCount}</td>
+                            </tr>
+                        `;
+                    });
+
+                    pdfHTML += `
+                        <tr style="background: #fffacd; font-weight: bold;">
+                            <td style="border: 1px solid #ccc; padding: 8px;">TOTALS</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">-</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">+${record.totalAdded || 0}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">-${record.totalSpoiled || 0}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">-${record.totalSold || 0}</td>
+                            <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">-</td>
+                        </tr>
+                        </table>
+                    `;
+                }
+
+                pdfHTML += `</div>`;
+            });
+
+            pdfHTML += `
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 11px;">
+                        <p>This is an official inventory report from Sangkalan Restaurant West Ave.</p>
+                        <p>For more information, please contact the management.</p>
+                    </div>
+                </div>
+            `;
+
+            // Create temporary container
+            const pdfContainer = document.createElement('div');
+            pdfContainer.innerHTML = pdfHTML;
+            pdfContainer.style.display = 'none';
+            document.body.appendChild(pdfContainer);
+
+            // Generate PDF
+            const opt = {
+                margin: 10,
+                filename: 'inventory_report_' + fromDate + '_to_' + toDate + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(pdfContainer).toPdf().get('pdf').then(function(pdf) {
+                document.body.removeChild(pdfContainer);
+                showNotification('✅ PDF downloaded successfully');
+            }).catch(function(error) {
+                document.body.removeChild(pdfContainer);
+                showNotification('❌ PDF generation failed');
+                alert('Error generating PDF: ' + error.message);
+            });
+        }
+
+        function printStockHistory() {
+            const fromDate = document.getElementById('historyFromDate').value;
+            const toDate = document.getElementById('historyToDate').value;
+
+            if (!fromDate || !toDate) {
+                alert('Please select both dates first');
+                return;
+            }
+
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            let printContent = `
+                <html>
+                <head>
+                    <title>Sangkalan Restaurant West Ave. - Complete Inventory Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 15px; color: #333; line-height: 1.4; }
+                        .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #333; padding-bottom: 15px; }
+                        .restaurant-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+                        .report-title { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+                        .date-range { font-size: 12px; color: #666; }
+                        .record-section { margin-top: 25px; page-break-inside: avoid; }
+                        .record-header { background-color: #e8f4f8; padding: 10px; font-weight: bold; margin-bottom: 10px; border-radius: 3px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+                        th, td { border: 1px solid #999; padding: 8px; text-align: left; font-size: 11px; }
+                        th { background-color: #d3d3d3; font-weight: bold; }
+                        .category-row { background-color: #f0f0f0; font-weight: bold; font-size: 12px; }
+                        .total-row { background-color: #fff9e6; font-weight: bold; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="restaurant-name">🍽️ SANGKALAN RESTAURANT WEST AVE.</div>
+                        <div class="report-title">Complete Inventory Report</div>
+                        <div class="date-range">Report Period: ${fromDate} to ${toDate}</div>
+                        <div class="date-range">Generated: ${new Date().toLocaleString('en-PH')}</div>
+                    </div>
+            `;
+
+            if (filteredHistory.length === 0) {
+                printContent += '<p style="text-align: center; color: #666;">No inventory records found for this date range</p>';
+            } else {
+                filteredHistory.forEach(record => {
+                    const isComprehensive = record.items && record.items[0] && record.items[0].beginningCount !== undefined;
+                    
+                    if (isComprehensive) {
+                        printContent += `
+                            <div class="record-section">
+                                <div class="record-header">
+                                    📅 ${record.date} | ⏰ ${record.time} | 📆 ${record.day}
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th style="text-align: center; width: 10%;">Category</th>
+                                            <th style="text-align: center; width: 8%;">Begin</th>
+                                            <th style="text-align: center; width: 8%;">Add</th>
+                                            <th style="text-align: center; width: 8%;">Spoiled</th>
+                                            <th style="text-align: center; width: 8%;">Sold</th>
+                                            <th style="text-align: center; width: 8%;">End</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        
+                        let categoriesSeen = new Set();
+                        record.items.forEach(item => {
+                            if (!categoriesSeen.has(item.category)) {
+                                printContent += `<tr class="category-row"><td colspan="7">📂 ${item.category}</td></tr>`;
+                                categoriesSeen.add(item.category);
+                            }
+                            
+                            printContent += `
+                                <tr>
+                                    <td>${item.itemName}</td>
+                                    <td style="text-align: center; font-size: 10px;">${item.category}</td>
+                                    <td style="text-align: center;">${item.beginningCount}</td>
+                                    <td style="text-align: center; background-color: #e8f5e9;">+${item.addedCount}</td>
+                                    <td style="text-align: center; background-color: #ffebee;">-${item.spoiledCount}</td>
+                                    <td style="text-align: center; background-color: #fff3e0;">-${item.soldCount}</td>
+                                    <td style="text-align: center; font-weight: bold; background-color: #e3f2fd;">${item.endingCount}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        printContent += `
+                                        <tr class="total-row">
+                                            <td colspan="2"><strong>TOTALS</strong></td>
+                                            <td style="text-align: center;">-</td>
+                                            <td style="text-align: center;">+${record.totalAdded}</td>
+                                            <td style="text-align: center;">-${record.totalSpoiled}</td>
+                                            <td style="text-align: center;">-${record.totalSold}</td>
+                                            <td style="text-align: center;">-</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            printContent += `
+                    <div class="footer">
+                        <p>This is an official inventory report from Sangkalan Restaurant West Ave.</p>
+                        <p>For more information, please contact the management.</p>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- CURRENT STOCK DISPLAY FUNCTIONS ---
+        function openCurrentStockModal() {
+            document.getElementById('currentStockModal').style.display = 'flex';
+            displayCurrentStocks('currentStockContent');
+        }
+
+        function closeCurrentStockModal() {
+            document.getElementById('currentStockModal').style.display = 'none';
+        }
+
+        function downloadCurrentStockCSV() {
+            let csv = 'Item Name,Category,Price,Current Stock\n';
+            
+            menuItems.forEach(item => {
+                const name = (item.name || '').replace(/"/g, '""');
+                const category = (item.category || 'N/A').replace(/"/g, '""');
+                const price = item.price || 0;
+                const stock = item.stock || 0;
+                
+                csv += `"${name}","${category}",${price},${stock}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-PH').replace(/\//g, '-');
+            const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }).replace(/:/g, '-');
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Current_Stock_${dateStr}_${timeStr}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // --- MONTHLY INVENTORY FUNCTIONS ---
+        function openMonthlyInventoryModal() {
+            const today = new Date().toISOString().split('T')[0];
+            const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            
+            document.getElementById('monthlyFromDate').value = firstDayOfMonth;
+            document.getElementById('monthlyToDate').value = today;
+            document.getElementById('monthlyInventoryContent').innerHTML = '';
+            document.getElementById('monthlyInventoryModal').classList.add('active');
+        }
+
+        function closeMonthlyInventoryModal() {
+            document.getElementById('monthlyInventoryModal').classList.remove('active');
+        }
+
+        function resetMonthlyAddCount() {
+            if (confirm('⚠️ WARNING: This will reset all ADD counts in the inventory records to ZERO. Are you sure?')) {
+                const historyKey = 'stock_history_' + CURRENT_BRANCH;
+                let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+                // Reset all add counts in history records
+                history.forEach(record => {
+                    if (record.items && Array.isArray(record.items)) {
+                        record.items.forEach(item => {
+                            item.addedCount = 0;
+                        });
+                    }
+                    record.totalAdded = 0;
+                });
+
+                // Save updated history back to localStorage
+                localStorage.setItem(historyKey, JSON.stringify(history));
+
+                // Also update Firebase
+                db.ref('stockHistory/' + CURRENT_BRANCH).remove();
+                history.forEach(record => {
+                    db.ref('stockHistory/' + CURRENT_BRANCH).push(record);
+                });
+
+                // Regenerate report if one is displayed
+                if (document.getElementById('monthlyInventoryContent').innerHTML.trim() !== '') {
+                    generateMonthlyInventoryReport();
+                    alert('✅ All ADD counts have been reset to zero! Report updated.');
+                } else {
+                    alert('✅ All ADD counts have been reset to zero!');
+                }
+            }
+        }
+
+        function generateMonthlyInventoryReport() {
+            const fromDate = document.getElementById('monthlyFromDate').value;
+            const toDate = document.getElementById('monthlyToDate').value;
+
+            if (!fromDate || !toDate) {
+                alert('❌ Please select both dates');
+                return;
+            }
+
+            if (fromDate > toDate) {
+                alert('❌ From date must be before To date');
+                return;
+            }
+
+            // Load inventory history from localStorage
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            // Filter history by date range
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            // Start with ALL menu items and their current stocks
+            const itemMovements = {};
+            menuItems.forEach(menuItem => {
+                itemMovements[menuItem.id] = {
+                    itemId: menuItem.id,
+                    itemName: menuItem.name,
+                    category: menuItem.category || 'Uncategorized',
+                    beginningCount: 0,
+                    totalAdded: 0,
+                    totalSpoiled: 0,
+                    totalSold: 0,
+                    endingCount: menuItem.stock || 0,  // Use current stock as default ending count
+                    currentStock: menuItem.stock || 0
+                };
+            });
+            
+            // Update with movements from history
+            filteredHistory.forEach(record => {
+                if (record.items && Array.isArray(record.items)) {
+                    record.items.forEach(item => {
+                        if (itemMovements[item.itemId]) {
+                            itemMovements[item.itemId].beginningCount = item.beginningCount;
+                            itemMovements[item.itemId].totalAdded += item.addedCount || 0;
+                            itemMovements[item.itemId].totalSpoiled += item.spoiledCount || 0;
+                            itemMovements[item.itemId].totalSold += item.soldCount || 0;
+                            itemMovements[item.itemId].endingCount = item.endingCount;
+                        }
+                    });
+                }
+            });
+            
+            // After processing history, update ending counts to match current stock from system
+            menuItems.forEach(menuItem => {
+                if (itemMovements[menuItem.id]) {
+                    itemMovements[menuItem.id].endingCount = menuItem.stock || 0;
+                    itemMovements[menuItem.id].currentStock = menuItem.stock || 0;
+                    
+                    // If all stocks are zero, reset all fields to zero (after reset button was clicked)
+                    const allStocksZero = menuItems.every(item => (item.stock || 0) === 0);
+                    if (allStocksZero) {
+                        itemMovements[menuItem.id].beginningCount = 0;
+                        itemMovements[menuItem.id].totalAdded = 0;
+                        itemMovements[menuItem.id].totalSpoiled = 0;
+                        itemMovements[menuItem.id].totalSold = 0;
+                        itemMovements[menuItem.id].endingCount = 0;
+                    }
+                }
+            });
+
+            // Convert to array and sort by category
+            const items = Object.values(itemMovements);
+            const categories = [...new Set(items.map(i => i.category))].sort();
+
+            // Build report HTML
+            let reportHTML = `
+                <div style="background: white; color: #333; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; font-size: 12px;">
+                    
+                    <!-- Header -->
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 3px solid #333; padding-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: bold;">🍽️ SANGKALAN RESTAURANT</div>
+                        <div style="font-size: 16px; font-weight: bold;">Monthly Inventory Report</div>
+                        <div style="font-size: 13px; color: #666; margin-top: 5px;">
+                            Period: <strong>${fromDate}</strong> to <strong>${toDate}</strong>
+                        </div>
+                        <div style="font-size: 11px; color: #888;">Generated: ${new Date().toLocaleString('en-PH')}</div>
+                    </div>
+
+                    <!-- Report Content -->
+                    <div style="max-height: 550px; overflow-y: auto;">
+            `;
+
+            // Group items by category and display
+            categories.forEach(category => {
+                const categoryItems = items.filter(i => i.category === category);
+                    
+                    reportHTML += `
+                        <div style="margin-bottom: 15px;">
+                            <div style="background-color: #f0f0f0; padding: 8px 10px; font-weight: bold; border-radius: 3px; margin-bottom: 8px; border-left: 4px solid #e74c3c;">
+                                📂 ${category}
+                            </div>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                <thead>
+                                    <tr style="background-color: #e8e8e8;">
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: left;">Item Name</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Begin</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Add</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Spoiled</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">Sold</th>
+                                        <th style="border: 1px solid #ccc; padding: 6px; text-align: center; width: 10%;">End</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    let categoryTotalBegin = 0;
+                    let categoryTotalAdd = 0;
+                    let categoryTotalSpoiled = 0;
+                    let categoryTotalSold = 0;
+                    let categoryTotalEnd = 0;
+
+                    categoryItems.forEach(item => {
+                        categoryTotalBegin += item.beginningCount || 0;
+                        categoryTotalAdd += item.totalAdded || 0;
+                        categoryTotalSpoiled += item.totalSpoiled || 0;
+                        categoryTotalSold += item.totalSold || 0;
+                        categoryTotalEnd += item.endingCount || 0;
+
+                        reportHTML += `
+                            <tr style="background-color: #fff; border-bottom: 1px solid #eee;">
+                                <td style="border: 1px solid #ccc; padding: 6px;">${item.itemName}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #f5f5f5;">${item.beginningCount || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e8f5e9;">+${item.totalAdded || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #ffebee;">-${item.totalSpoiled || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #fff3e0;">-${item.totalSold || 0}</td>
+                                <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e3f2fd; font-weight: bold;">${item.endingCount || 0}</td>
+                            </tr>
+                        `;
+                    });
+
+                    reportHTML += `
+                                    <tr style="background-color: #fff9e6; font-weight: bold;">
+                                        <td style="border: 1px solid #ccc; padding: 6px;">SUBTOTAL</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center;">${categoryTotalBegin}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e8f5e9;">+${categoryTotalAdd}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #ffebee;">-${categoryTotalSpoiled}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #fff3e0;">-${categoryTotalSold}</td>
+                                        <td style="border: 1px solid #ccc; padding: 6px; text-align: center; background-color: #e3f2fd;">${categoryTotalEnd}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+
+                // Grand totals
+                let grandTotalBegin = 0, grandTotalAdd = 0, grandTotalSpoiled = 0, grandTotalSold = 0, grandTotalEnd = 0;
+                
+                items.forEach(item => {
+                    grandTotalBegin += item.beginningCount || 0;
+                    grandTotalAdd += item.totalAdded || 0;
+                    grandTotalSpoiled += item.totalSpoiled || 0;
+                    grandTotalSold += item.totalSold || 0;
+                    grandTotalEnd += item.endingCount || 0;
+                });
+
+                reportHTML += `
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 3px solid #333;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px; font-weight: bold;">
+                            <tr style="background-color: #333; color: white;">
+                                <td style="border: 1px solid #333; padding: 8px;">GRAND TOTAL</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">${grandTotalBegin}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">+${grandTotalAdd}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">-${grandTotalSpoiled}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">-${grandTotalSold}</td>
+                                <td style="border: 1px solid #333; padding: 8px; text-align: center;">${grandTotalEnd}</td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+
+            reportHTML += `
+                    </div>
+                    <!-- Footer -->
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ccc; text-align: center; font-size: 10px; color: #888;">
+                        <p>This is an official monthly inventory report from Sangkalan Restaurant</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('monthlyInventoryContent').innerHTML = reportHTML;
+        }
+
+        function printMonthlyInventory() {
+            const content = document.getElementById('monthlyInventoryContent').innerHTML;
+            if (!content || content.includes('Please select')) {
+                alert('❌ Please generate a report first');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Monthly Inventory Report</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 15px; color: #333; }
+                        @media print { body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function downloadMonthlyInventoryCSV() {
+            const fromDate = document.getElementById('monthlyFromDate').value;
+            const toDate = document.getElementById('monthlyToDate').value;
+            const content = document.getElementById('monthlyInventoryContent').innerHTML;
+
+            if (!content || content.includes('Please select')) {
+                alert('❌ Please generate a report first');
+                return;
+            }
+
+            // Load inventory history from localStorage
+            const historyKey = 'stock_history_' + CURRENT_BRANCH;
+            let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+
+            // Filter history by date range
+            const filteredHistory = history.filter(record => {
+                const recordDate = new Date(record.timestamp).toISOString().split('T')[0];
+                return recordDate >= fromDate && recordDate <= toDate;
+            });
+
+            // Start with ALL menu items
+            const itemMovements = {};
+            menuItems.forEach(menuItem => {
+                itemMovements[menuItem.id] = {
+                    itemId: menuItem.id,
+                    itemName: menuItem.name,
+                    category: menuItem.category || 'Uncategorized',
+                    beginningCount: 0,
+                    totalAdded: 0,
+                    totalSpoiled: 0,
+                    totalSold: 0,
+                    endingCount: menuItem.stock || 0
+                };
+            });
+            
+            // Update with movements from history
+            filteredHistory.forEach(record => {
+                if (record.items && Array.isArray(record.items)) {
+                    record.items.forEach(item => {
+                        if (itemMovements[item.itemId]) {
+                            itemMovements[item.itemId].beginningCount = item.beginningCount;
+                            itemMovements[item.itemId].totalAdded += item.addedCount || 0;
+                            itemMovements[item.itemId].totalSpoiled += item.spoiledCount || 0;
+                            itemMovements[item.itemId].totalSold += item.soldCount || 0;
+                            itemMovements[item.itemId].endingCount = item.endingCount;
+                        }
+                    });
+                }
+            });
+            
+            // Update ending counts to match current stock
+            menuItems.forEach(menuItem => {
+                if (itemMovements[menuItem.id]) {
+                    itemMovements[menuItem.id].endingCount = menuItem.stock || 0;
+                    
+                    // Reset if all stocks are zero
+                    const allStocksZero = menuItems.every(item => (item.stock || 0) === 0);
+                    if (allStocksZero) {
+                        itemMovements[menuItem.id].beginningCount = 0;
+                        itemMovements[menuItem.id].totalAdded = 0;
+                        itemMovements[menuItem.id].totalSpoiled = 0;
+                        itemMovements[menuItem.id].totalSold = 0;
+                        itemMovements[menuItem.id].endingCount = 0;
+                    }
+                }
+            });
+
+            // Convert to array and sort by category
+            const items = Object.values(itemMovements);
+            const categories = [...new Set(items.map(i => i.category))].sort();
+
+            // Build CSV
+            let csv = 'SANGKALAN RESTAURANT - MONTHLY INVENTORY REPORT\n';
+            csv += `Period: ${fromDate} to ${toDate}\n`;
+            csv += `Generated: ${new Date().toLocaleString('en-PH')}\n\n`;
+            csv += 'Category,Item Name,Beginning Count,Total Added,Total Spoiled,Total Sold,Ending Count\n';
+
+            let grandTotalBegin = 0, grandTotalAdd = 0, grandTotalSpoiled = 0, grandTotalSold = 0, grandTotalEnd = 0;
+
+            categories.forEach(category => {
+                const categoryItems = items.filter(i => i.category === category);
+                let categoryTotalBegin = 0, categoryTotalAdd = 0, categoryTotalSpoiled = 0, categoryTotalSold = 0, categoryTotalEnd = 0;
+
+                categoryItems.forEach(item => {
+                    categoryTotalBegin += item.beginningCount || 0;
+                    categoryTotalAdd += item.totalAdded || 0;
+                    categoryTotalSpoiled += item.totalSpoiled || 0;
+                    categoryTotalSold += item.totalSold || 0;
+                    categoryTotalEnd += item.endingCount || 0;
+
+                    csv += `${category},"${item.itemName}",${item.beginningCount || 0},${item.totalAdded || 0},${item.totalSpoiled || 0},${item.totalSold || 0},${item.endingCount || 0}\n`;
+                });
+
+                csv += `${category} SUBTOTAL,,-${categoryTotalBegin},+${categoryTotalAdd},-${categoryTotalSpoiled},-${categoryTotalSold},${categoryTotalEnd}\n\n`;
+
+                grandTotalBegin += categoryTotalBegin;
+                grandTotalAdd += categoryTotalAdd;
+                grandTotalSpoiled += categoryTotalSpoiled;
+                grandTotalSold += categoryTotalSold;
+                grandTotalEnd += categoryTotalEnd;
+            });
+
+            csv += `GRAND TOTAL,,-${grandTotalBegin},+${grandTotalAdd},-${grandTotalSpoiled},-${grandTotalSold},${grandTotalEnd}\n`;
+
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-PH').replace(/\//g, '-');
+            const timeStr = now.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }).replace(/:/g, '-');
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Monthly_Inventory_${dateStr}_${timeStr}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = () => {
+            db.ref('menu/' + CURRENT_BRANCH).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    menuItems = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+                } else {
+                    menuItems = [];
+                }
+                renderInventory();
+            });
+        };
+    </script>
+        <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
