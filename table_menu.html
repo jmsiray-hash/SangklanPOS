@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sangkalan | Management Portal</title>
+   <link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #38bdf8;
+            --bg: #020617;
+            --glass: rgba(15, 23, 42, 0.7);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            min-height: 100vh;
+            background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.05) 0px, transparent 50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- TOP NAVIGATION BAR --- */
+        .top-nav {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 10px 0;
+        }
+
+        .btn-exit {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 100px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-exit:hover {
+            background: white;
+            color: black;
+        }
+
+        /* --- PORTAL VIEW --- */
+        #portal {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 60px;
+        }
+
+        .portal-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 50px;
+            border-radius: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(20px);
+        }
+
+        .portal-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(56, 189, 248, 0.1);
+        }
+
+        /* --- MANAGEMENT SECTIONS --- */
+        .mgmt-section { display: none; width: 100%; max-width: 1000px; animation: fadeIn 0.5s ease; }
+        
+        .section-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+        
+        .btn-add { 
+            background: var(--accent); 
+            border: none; 
+            color: #020617; 
+            padding: 12px 25px; 
+            border-radius: 15px; 
+            font-weight: 600; 
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        /* --- GRID AND CARDS --- */
+        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .data-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        .data-card:hover { border-color: rgba(255,255,255,0.2); }
+
+        .data-card input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            width: 100%;
+            margin-bottom: 8px;
+            outline: none;
+            border-bottom: 1px solid transparent;
+        }
+
+        .data-card input:focus { border-bottom-color: var(--accent); }
+
+        .price-wrapper { display: flex; align-items: center; color: var(--accent); font-weight: 600; }
+        .category-tag { font-size: 0.65rem; color: #64748b; text-transform: uppercase; letter-spacing: 2px; }
+
+        .btn-delete { color: #fb7185; background: none; border: none; font-size: 0.75rem; cursor: pointer; margin-top: 15px; opacity: 0.6; }
+        .btn-delete:hover { opacity: 1; }
+
+        .category-row { display: flex; align-items: center; gap: 8px; }
+        .btn-add-same { background: var(--accent); border: none; color: #020617; width: 24px; height: 24px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: 0.2s; }
+        .btn-add-same:hover { opacity: 1; transform: scale(1.1); }
+
+        .category-row { display: flex; align-items: center; gap: 8px; }
+        .btn-add-same { background: var(--accent); border: none; color: #020617; width: 24px; height: 24px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: 0.2s; }
+        .btn-add-same:hover { opacity: 1; transform: scale(1.1); }
+
+        /* Category Filter Bar Styles */
+        .category-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .category-chip {
+            padding: 10px 18px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            color: #94a3b8;
+        }
+
+        .category-chip:hover {
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .category-chip.active {
+            background: linear-gradient(135deg, var(--accent) 0%, #0ea5e9 100%);
+            color: #020617;
+            border-color: var(--accent);
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Add Menu Modal Styles */
+        .add-menu-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            backdrop-filter: blur(5px);
+        }
+
+        .add-menu-modal-overlay.active {
+            display: flex;
+        }
+
+        .add-menu-modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .add-menu-modal h2 {
+            margin: 0 0 20px 0;
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .modal-btn-cancel {
+            background: var(--surface-light);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .modal-btn-cancel:hover {
+            background: #3d4f63;
+            border-color: var(--text-muted);
+        }
+
+        .modal-btn-save {
+            background: linear-gradient(135deg, var(--accent) 0%, #0ea5e9 100%);
+            color: #020617;
+            border: none;
+        }
+
+        .modal-btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <a href="dashboard.html" class="btn-exit">← Exit to Dashboard</a>
+        <div style="text-align: right;">
+            <p style="font-size: 0.6rem; color: var(--accent); letter-spacing: 2px;">SYSTEM MODE</p>
+            <p style="font-size: 0.8rem; font-weight: 600;">MANAGEMENT</p>
+        </div>
+    </div>
+
+    <div id="portal">
+        <div class="portal-card" onclick="showSection('table-mgmt')">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🪑</div>
+            <h2 style="font-weight: 200;">Tables</h2>
+            <p style="color: #64748b; font-size: 0.8rem;">Layout & Table ID Config</p>
+        </div>
+        <div class="portal-card" onclick="showSection('menu-mgmt')">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🍱</div>
+            <h2 style="font-weight: 200;">Menu</h2>
+            <p style="color: #64748b; font-size: 0.8rem;">Items, Categories & Pricing</p>
+        </div>
+    </div>
+
+    <section id="table-mgmt" class="mgmt-section">
+        <div class="section-header">
+            <div>
+                <button onclick="showPortal()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.8rem;">← Back to Selection</button>
+                <h1 style="font-weight: 200; margin-top: 5px;">Table Setup</h1>
+            </div>
+            <button class="btn-add" onclick="addTable()">+ Add New Table</button>
+        </div>
+        <div id="table-category-bar" class="category-filter-bar"></div>
+        <div id="table-list" class="data-grid"></div>
+    </section>
+
+    <section id="menu-mgmt" class="mgmt-section">
+        <div class="section-header">
+            <div>
+                <button onclick="showPortal()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.8rem;">← Back to Selection</button>
+                <h1 style="font-weight: 200; margin-top: 5px;">Menu Registry</h1>
+            </div>
+            <button class="btn-add" onclick="addMenu()">+ Add Item</button>
+        </div>
+        
+        <!-- Menu Category Guide -->
+        <div style="background: rgba(56, 189, 248, 0.1); border: 2px solid var(--accent); border-radius: 15px; padding: 15px; margin-bottom: 20px;">
+            <p style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 8px;">📋 MENU CATEGORIZATION GUIDE:</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.85rem;">
+                <div>
+                    <p style="color: #22c55e; font-weight: 600; margin-bottom: 6px;">🍽️ KITCHEN MENU (Display on POS Menu):</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #94a3b8;">
+                        <li>FOOD, APPETIZER, MAIN, DESSERT</li>
+                        <li>SOUP, SALAD, RICE, NOODLE</li>
+                        <li>PASTA, DISH, etc.</li>
+                    </ul>
+                </div>
+                <div>
+                    <p style="color: #f59e0b; font-weight: 600; margin-bottom: 6px;">🍸 BAR MENU (Display separately on POS):</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #94a3b8;">
+                        <li>BAR, BEVERAGE, DRINK</li>
+                        <li>ALCOHOL, COCKTAIL, BEER</li>
+                        <li>WINE, SPIRIT, etc.</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; margin-bottom: 0;">💡 Note: Use these category names to ensure items appear in the correct menu section on POS.</p>
+        </div>
+        
+        <div id="menu-category-bar" class="category-filter-bar"></div>
+        <div id="menu-list" class="data-grid"></div>
+    </section>
+
+    <!-- Add Menu Modal -->
+    <div class="add-menu-modal-overlay" id="add-menu-modal-overlay">
+        <div class="add-menu-modal">
+            <h2>📝 Add New Menu Item</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Main Category</label>
+                <select id="main-category-select" class="form-control">
+                    <option value="">-- Select Main Category --</option>
+                    <option value="kitchen">🍽️ Kitchen Menu</option>
+                    <option value="bar">🍸 Bar Menu</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Sub-Category (e.g., FOOD, APPETIZER, BEVERAGE)</label>
+                <input type="text" id="sub-category-input" class="form-control" placeholder="Enter sub-category name" style="text-transform: uppercase;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Item Name</label>
+                <input type="text" id="item-name-input" class="form-control" placeholder="Enter item name">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Price (₱)</label>
+                    <input type="number" id="item-price-input" class="form-control" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock</label>
+                    <input type="number" id="item-stock-input" class="form-control" placeholder="0" min="0" value="10">
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeAddMenuModal()">Cancel</button>
+                <button class="modal-btn modal-btn-save" onclick="saveNewMenuItem()">Save Item</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDebowWMBipkmv8S42x0JU-DQmzX0Zg420",
+            authDomain: "sangkalan-pos.firebaseapp.com",
+            databaseURL: "https://sangkalan-pos-default-rtdb.firebaseio.com",
+            projectId: "sangkalan-pos",
+            storageBucket: "sangkalan-pos.firebasestorage.app",
+            messagingSenderId: "654046188487",
+            appId: "1:654046188487:web:fef8f67d469d7235747fe2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const CURRENT_BRANCH = "Sangkalan Visayas";
+
+        let tables = [];
+        let menuItems = [];
+        let activeMgmtCategory = "ALL";
+        let mgmtSearchQuery = "";
+        let activeTableCategory = "ALL";
+        let activeMenuCategory = "ALL";
+
+        // Main category mappings
+        const MAIN_CATEGORIES_MAPPING = {
+            kitchen: ['FOOD', 'APPETIZER', 'MAIN', 'DESSERT', 'SOUP', 'SALAD', 'RICE', 'NOODLE', 'PASTA', 'DISH'],
+            bar: ['BAR', 'BEVERAGE', 'DRINK', 'ALCOHOL', 'COCKTAIL', 'BEER', 'WINE', 'SPIRIT']
+        };
+
+        function showSection(id) {
+            document.getElementById('portal').style.display = 'none';
+            document.querySelectorAll('.mgmt-section').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            renderAll();
+        }
+
+        function showPortal() {
+            document.getElementById('portal').style.display = 'grid';
+            document.querySelectorAll('.mgmt-section').forEach(s => s.style.display = 'none');
+        }
+
+        function addTable() {
+            const newTable = { id: Date.now(), name: "Table " + (tables.length + 1), category: "MAIN" };
+            db.ref('tables/' + CURRENT_BRANCH + '/' + newTable.id).set(newTable);
+        }
+
+        function addTableWithCategory(cat) {
+            const newTable = { id: Date.now(), name: "Table " + (tables.length + 1), category: cat };
+            db.ref('tables/' + CURRENT_BRANCH + '/' + newTable.id).set(newTable);
+        }
+
+        function addMenu() {
+            // Show the add menu modal
+            document.getElementById('add-menu-modal-overlay').classList.add('active');
+            // Reset form
+            document.getElementById('main-category-select').value = '';
+            document.getElementById('sub-category-input').value = '';
+            document.getElementById('item-name-input').value = '';
+            document.getElementById('item-price-input').value = '';
+            document.getElementById('item-stock-input').value = '10';
+        }
+
+        function closeAddMenuModal() {
+            document.getElementById('add-menu-modal-overlay').classList.remove('active');
+        }
+
+        function updateSubCategoryOptions() {
+            // This function is no longer needed as sub-category is now free-form text input
+        }
+
+        function saveNewMenuItem() {
+            const mainCat = document.getElementById('main-category-select').value;
+            const category = document.getElementById('sub-category-input').value.trim().toUpperCase();
+            const name = document.getElementById('item-name-input').value.trim();
+            const price = parseFloat(document.getElementById('item-price-input').value) || 0;
+            const stock = parseInt(document.getElementById('item-stock-input').value) || 10;
+
+            // Validation
+            if (!mainCat) {
+                alert('Please select a main category (Kitchen Menu or Bar Menu)');
+                return;
+            }
+            if (!category) {
+                alert('Please enter a sub-category name');
+                return;
+            }
+            if (!name) {
+                alert('Please enter an item name');
+                return;
+            }
+            if (price < 0) {
+                alert('Price cannot be negative');
+                return;
+            }
+
+            // Create new menu item with mainCategory tracking
+            const newItem = { 
+                id: Date.now(), 
+                category: category, 
+                mainCategory: mainCat,  // Store which main category (kitchen or bar) this belongs to
+                name: name, 
+                price: price, 
+                stock: stock 
+            };
+
+            // Save to Firebase
+            db.ref('menu/' + CURRENT_BRANCH + '/' + newItem.id).set(newItem).then(() => {
+                closeAddMenuModal();
+                console.log('Menu item added successfully');
+            }).catch(err => {
+                alert('Error adding menu item: ' + err.message);
+            });
+        }
+
+        function addMenuWithCategory(cat) {
+            // This function is kept for backward compatibility but now uses the modal
+            document.getElementById('add-menu-modal-overlay').classList.add('active');
+            document.getElementById('main-category-select').value = '';
+            document.getElementById('sub-category-input').value = cat;
+            document.getElementById('item-name-input').value = '';
+            document.getElementById('item-price-input').value = '';
+            document.getElementById('item-stock-input').value = '10';
+        }
+
+        function deleteItem(type, id) {
+            if(type === 'table') {
+                db.ref('tables/' + CURRENT_BRANCH + '/' + id).remove();
+            } else {
+                db.ref('menu/' + CURRENT_BRANCH + '/' + id).remove();
+            }
+        }
+
+        function updateData(type, id, field, val) {
+            if(type === 'table') {
+                const updateObj = {};
+                updateObj[field] = val;
+                db.ref('tables/' + CURRENT_BRANCH + '/' + id).update(updateObj);
+            } else {
+                const updateObj = {};
+                updateObj[field] = val;
+                db.ref('menu/' + CURRENT_BRANCH + '/' + id).update(updateObj);
+            }
+        }
+
+        // --- NEW FEATURES: SEARCH AND FILTER ---
+        function filterMgmtCategory(cat) {
+            activeMgmtCategory = cat;
+            renderAll();
+        }
+
+        function handleSearch(val) {
+            mgmtSearchQuery = val.toLowerCase();
+            renderAll();
+        }
+
+        function filterTableCategory(cat) {
+            activeTableCategory = cat;
+            renderAll();
+        }
+
+        function filterMenuCategory(cat) {
+            activeMenuCategory = cat;
+            renderAll();
+        }
+
+        function renderAll() {
+            // Render Tables - Grouped by Category
+            const tableListContainer = document.getElementById('table-list');
+            
+            // Group tables by category
+            const tableCategories = {};
+            tables.forEach(t => {
+                const cat = (t.category || 'MAIN').toUpperCase();
+                if (!tableCategories[cat]) {
+                    tableCategories[cat] = [];
+                }
+                tableCategories[cat].push(t);
+            });
+            
+            // Sort categories alphabetically
+            const sortedTableCats = Object.keys(tableCategories).sort();
+            
+            let tablesHTML = '';
+            sortedTableCats.forEach(cat => {
+                const tableCards = tableCategories[cat].map(t => `
+                    <div class="data-card">
+                        <div class="category-row">
+                            <input type="text" class="category-tag" value="${t.category || 'MAIN'}" 
+                                   onblur="updateData('table', ${t.id}, 'category', this.value.toUpperCase())" placeholder="CATEGORY" style="flex: 1;">
+                            <button class="btn-add-same" onclick="addTableWithCategory('${t.category || 'MAIN'}')" title="Add table in same category">+</button>
+                        </div>
+                        <input type="text" value="${t.name}" 
+                               onblur="updateData('table', ${t.id}, 'name', this.value)" style="font-weight: 600;" placeholder="Table Name">
+                        <button class="btn-delete" onclick="deleteItem('table', ${t.id})">Remove Table</button>
+                    </div>
+                `).join('');
+                
+                tablesHTML += `
+                    <div style="grid-column: 1/-1; margin-top: 20px; margin-bottom: 10px;">
+                        <h3 style="color: var(--accent); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">📋 ${cat}</h3>
+                    </div>
+                    ${tableCards}
+                `;
+            });
+            
+            if (tables.length === 0) {
+                tablesHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">No tables yet. Click "Add New Table" to create one.</div>';
+            }
+            
+            tableListContainer.innerHTML = tablesHTML;
+
+            // Menu Rendering Logic - Grouped by Category
+            const listContainer = document.getElementById('menu-list');
+            
+            // Search Bar HTML
+            let controlsHTML = `
+                <div id="mgmt-controls" style="grid-column: 1/-1; margin-bottom: 20px;">
+                    <input type="text" placeholder="🔍 Search item name..." 
+                           oninput="handleSearch(this.value)" 
+                           value="${mgmtSearchQuery}"
+                           style="width: 100%; padding: 15px; background: var(--glass); border: 1px solid var(--border); border-radius: 15px; color: white; outline: none; backdrop-filter: blur(10px);">
+                </div>
+            `;
+
+            // Filter the actual list by search query
+            const filteredItems = menuItems.filter(m => {
+                const matchesSearch = m.name.toLowerCase().includes(mgmtSearchQuery);
+                return matchesSearch;
+            });
+            
+            // Group filtered items by category
+            const menuCategories = {};
+            filteredItems.forEach(m => {
+                const cat = m.category.toUpperCase();
+                if (!menuCategories[cat]) {
+                    menuCategories[cat] = [];
+                }
+                menuCategories[cat].push(m);
+            });
+            
+            // Sort categories alphabetically
+            const sortedMenuCats = Object.keys(menuCategories).sort();
+            
+            let menuHTML = '';
+            sortedMenuCats.forEach(cat => {
+                const menuCards = menuCategories[cat].map(m => `
+                    <div class="data-card">
+                        <div class="category-row">
+                            <input type="text" class="category-tag" value="${m.category}" 
+                                   onblur="updateData('menu', ${m.id}, 'category', this.value.toUpperCase())" placeholder="CATEGORY" style="flex: 1;">
+                            <button class="btn-add-same" onclick="addMenuWithCategory('${m.category}')" title="Add item in same category">+</button>
+                        </div>
+                        <input type="text" value="${m.name}" 
+                               onblur="updateData('menu', ${m.id}, 'name', this.value)" style="font-weight: 600;" placeholder="Item Name">
+                        <div class="price-wrapper">
+                            <span>₱</span>
+                            <input type="number" value="${m.price}" 
+                                   onblur="updateData('menu', ${m.id}, 'price', this.value)" style="color: var(--accent);">
+                        </div>
+                        <button class="btn-delete" onclick="deleteItem('menu', ${m.id})">Delete Item</button>
+                    </div>
+                `).join('');
+                
+                menuHTML += `
+                    <div style="grid-column: 1/-1; margin-top: 20px; margin-bottom: 10px;">
+                        <h3 style="color: var(--accent); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">🍱 ${cat}</h3>
+                    </div>
+                    ${menuCards}
+                `;
+            });
+            
+            if (filteredItems.length === 0) {
+                menuHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">' + 
+                    (mgmtSearchQuery ? 'No items match your search.' : 'No menu items yet. Click "Add Item" to create one.') + 
+                    '</div>';
+            }
+
+            // Combine Controls + Grouped Data Cards
+            listContainer.innerHTML = controlsHTML + menuHTML;
+        }
+
+        // Load data from Firebase
+        db.ref('tables/' + CURRENT_BRANCH).on('value', (snapshot) => {
+            const data = snapshot.val();
+            tables = data ? Object.values(data) : [];
+            renderAll();
+        });
+
+        db.ref('menu/' + CURRENT_BRANCH).on('value', (snapshot) => {
+            const data = snapshot.val();
+            menuItems = data ? Object.values(data) : [];
+            renderAll();
+        });
+    </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sangkalan | Premium Terminal</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#020617">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;600&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <style>
+        :root { --accent: #38bdf8; --bg: #020617; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.08); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: var(--bg);
+            background-image: radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.1) 0px, transparent 50%);
+            overflow: hidden; color: white;
+        }
+        .terminal-container {
+            width: 90%; max-width: 440px; padding: 60px 45px; background: var(--glass);
+            backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 40px;
+            text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        }
+        .brand-logo { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-bottom: 5px; color: white; }
+        .terminal-status { font-size: 0.75rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 40px; display: block; }
+        .field-box { margin-bottom: 20px; text-align: left; }
+        .field-box label { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-left: 10px; margin-bottom: 8px; display: block; }
+        .input-prime { width: 100%; padding: 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 15px; color: white; text-align: center; outline: none; transition: 0.3s; }
+        .input-prime:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        .btn-authorize { width: 100%; padding: 18px; background: var(--accent); color: #020617; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-authorize:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(56,189,248,0.3); }
+        #feedback { margin-top: 25px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; line-height: 1.4; }
+        .toggle-mode { margin-top: 20px; font-size: 0.8rem; color: rgba(255,255,255,0.4); cursor: pointer; }
+        .toggle-mode span { color: var(--accent); text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container">
+        <h1 class="brand-logo">Sangkalan</h1>
+        <span class="terminal-status">SECURE ACCESS</span>
+
+        <div class="field-box">
+            <label>ADMIN EMAIL</label>
+            <input type="email" id="email" class="input-prime" placeholder="ex: admin@test.com">
+        </div>
+
+        <div class="field-box">
+            <label>PASSWORD</label>
+            <input type="password" id="pass" class="input-prime" placeholder="••••••••">
+        </div>
+
+        <button class="btn-authorize" onclick="executeAuth()">LOGIN</button>
+        
+        <p id="feedback"></p>
+    </div>
+
+    <!-- Service Worker Registration for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+    </script>
+
+    <script>
+        // UPDATED CONFIG FROM YOUR PROJECT SETTINGS
+        const firebaseConfig = {
+            apiKey: "AIzaSyA5yN7Na-4CuYfqiuy71NP9J2TaLWK3tsw", // Siguraduhin na ito ang nasa 'Config' tab mo
+            authDomain: "your-pos-abc4d.firebaseapp.com",
+            projectId: "your-pos-abc4d", // Base sa image_a26459.png
+            storageBucket: "your-pos-abc4d.firebasestorage.app",
+            messagingSenderId: "575742193899",
+            appId: "1:575742193899:web:4032769f6cacf49a8b4eae" // Base sa image_a34d57.png
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        function executeAuth() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            const f = document.getElementById('feedback');
+
+            if(!e || !p) {
+                f.style.color = "#fb7185";
+                f.innerText = "✦ Credentials Required";
+                return;
+            }
+
+            f.style.color = "#38bdf8";
+            f.innerText = "✦ Processing Cloud Request...";
+
+            // LOGIN EXISTING USER
+            auth.signInWithEmailAndPassword(e, p)
+                .then(() => {
+                    f.style.color = "#34d399";
+                    f.innerText = "✦ Access Granted. Welcome Back.";
+                    localStorage.setItem('store-cashier', e.split('@')[0].toUpperCase());
+                    localStorage.setItem('store-email', e);
+                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1200);
+                })
+                .catch(error => { 
+                    f.style.color = "#fb7185"; 
+                    f.innerText = "✦ Access Denied: Check Email/Password"; 
+                });
+        }
+    </script>
+</body>
+</html>

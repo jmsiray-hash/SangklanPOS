@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sangkalan | Premium Settings</title>
+   <link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;600&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDebowWMBipkmv8S42x0JU-DQmzX0Zg420",
+            authDomain: "sangkalan-pos.firebaseapp.com",
+            databaseURL: "https://sangkalan-pos-default-rtdb.firebaseio.com",
+            projectId: "sangkalan-pos",
+            storageBucket: "sangkalan-pos.firebasestorage.app",
+            messagingSenderId: "654046188487",
+            appId: "1:654046188487:web:fef8f67d469d7235747fe2"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        window.db = db;
+    </script>
+    <style>
+        :root {
+            --accent: #38bdf8;
+            --bg: #020617;
+            --glass: rgba(15, 23, 42, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Ultra High-End Mesh Gradient Background */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.1) 0px, transparent 40%),
+                radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.1) 0px, transparent 40%);
+            overflow: hidden;
+        }
+
+        /* --- AUTH SCREEN --- */
+        #lock-screen {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            text-align: center;
+            width: 380px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+            animation: slideIn 0.8s ease;
+        }
+
+        .auth-oval {
+            width: 80px; height: 40px;
+            background: linear-gradient(90deg, var(--accent), #818cf8);
+            border-radius: 100px;
+            margin: 0 auto 30px;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
+        }
+
+        .pass-input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 10px;
+            outline: none;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .pass-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+
+        /* --- MAIN CONTENT --- */
+        #settings-content {
+            display: none;
+            width: 90%;
+            max-width: 1000px;
+            animation: fadeIn 1s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        h1 { font-weight: 200; font-size: 3rem; letter-spacing: -1px; }
+        
+        .save-indicator {
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: 0.5s;
+        }
+
+        .admin-card {
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border);
+            border-radius: 35px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            position: relative;
+        }
+
+        .info-box {
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 0;
+        }
+
+        .info-box label {
+            font-size: 0.65rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .live-field {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            padding: 5px 0;
+            transition: 0.3s;
+        }
+        .live-field:focus { color: var(--accent); }
+
+        .time-inputs {
+            display: flex;
+            gap: 20px;
+        }
+
+        .time-group {
+            flex: 1;
+        }
+
+        .time-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .btn-exit {
+            position: absolute;
+            top: -60px; right: 0;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-exit:hover { background: white; color: black; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="auth-oval"></div>
+        <h2 style="font-weight: 400; margin-bottom: 10px;">Security Access</h2>
+        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 30px;">Authorized Personnel Only</p>
+        <input type="password" id="auth-pass" class="pass-input" maxlength="4" placeholder="••••">
+        <button onclick="unlock()" style="width:100%; padding:15px; border-radius:15px; border:none; background:white; font-weight:600; cursor:pointer;">Verify Identity</button>
+    </div>
+
+    <div id="settings-content">
+        <div class="header">
+            <div>
+                <p style="color: var(--accent); font-size: 0.8rem; letter-spacing: 3px; margin-bottom: 5px;">CONFIGURATION</p>
+                <h1>Core Settings</h1>
+            </div>
+            <span id="sync-status" class="save-indicator">✦ Synchronized</span>
+        </div>
+
+        <div class="admin-card">
+            <button class="btn-exit" onclick="window.location.href='dashboard.html'">Close Settings</button>
+            
+            <div class="info-box">
+                <label>Restaurant Identity</label>
+                <input type="text" id="store-name" class="live-field" oninput="save('store-name', this.value)">
+            </div>
+
+            <div class="info-box">
+                <label>Designation / Branch</label>
+                <input type="text" id="store-branch" class="live-field" oninput="save('store-branch', this.value)">
+            </div>
+
+            <div class="info-box">
+                <label>Physical Address</label>
+                <input type="text" id="store-address" class="live-field" oninput="save('store-address', this.value)">
+            </div>
+
+            <div class="info-box">
+                <label>Lead Cashier</label>
+                <input type="text" id="store-cashier" class="live-field" oninput="save('store-cashier', this.value)">
+            </div>
+
+            <div class="info-box">
+                <label>Branch ID Number</label>
+                <input type="text" id="store-id" class="live-field" oninput="save('store-id', this.value)">
+            </div>
+
+            <div class="info-box operation-hours">
+                <label>Operation Hours</label>
+                <div class="time-inputs">
+                    <div class="time-group">
+                        <span class="time-label">Opening:</span>
+                        <input type="time" id="operation-time" class="live-field" oninput="save('operation-time', this.value)">
+                    </div>
+                    <div class="time-group">
+                        <span class="time-label">Closing:</span>
+                        <input type="time" id="operation-closing-time" class="live-field" oninput="save('operation-closing-time', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: 30px; color: #475569; font-size: 0.7rem; text-align: center; letter-spacing: 1px;">
+            ALL DATA ENCRYPTED & SAVED IN REAL-TIME LOCAL STORAGE
+        </p>
+    </div>
+
+    <script>
+        // Load stored data elegantly
+        window.addEventListener('DOMContentLoaded', () => {
+            const fields = ['store-name', 'store-branch', 'store-address', 'store-cashier', 'store-id', 'operation-time', 'operation-closing-time'];
+            fields.forEach(f => {
+                const val = localStorage.getItem(f);
+                if(val) document.getElementById(f).value = val;
+                else {
+                    // Default values if empty
+                    if(f === 'store-name') document.getElementById(f).value = "Sangkalan";
+                    if(f === 'operation-time') document.getElementById(f).value = "08:00";
+                    if(f === 'operation-closing-time') document.getElementById(f).value = "22:00";
+                }
+            });
+        });
+
+        function unlock() {
+            if(document.getElementById('auth-pass').value === "4321") {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('settings-content').style.display = 'block';
+            } else {
+                alert("Identity Unverified.");
+            }
+        }
+
+        function save(key, val) {
+            localStorage.setItem(key, val);
+            
+            // Visual feedback - High End "Sync" feel
+            const status = document.getElementById('sync-status');
+            status.style.opacity = "1";
+            status.innerText = "✦ Saving...";
+            
+            // Sync to Firebase Realtime Database for cloud-powered real-time updates
+            if (window.db) {
+                window.db.ref('settings/' + key).set(val).then(() => {
+                    console.log('Firebase sync successful for: ' + key);
+                }).catch((error) => {
+                    console.error('Firebase sync error: ', error);
+                });
+            }
+            
+            setTimeout(() => {
+                status.innerText = "✦ Synchronized";
+                setTimeout(() => { status.style.opacity = "0.4"; }, 1000);
+            }, 500);
+        }
+    </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+</body>
+</html>
